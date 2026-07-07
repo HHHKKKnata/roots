@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROOTS / 知の根源ポータル</title>
+    <style>
+        /* 📖 上品で透明感のあるフェミニン・くすみパステルデザイン */
+        @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-color: #fbf8f7;        /* ほんのりピンクを帯びた優しいホワイト */
+            --panel-bg: #ffffff;        /* 清潔感のある白 */
+            --primary-brand: #d4a5b8;   /* 落ち着いた大人のミスティピンク */
+            --accent-brand: #b1a7cb;    /* 洗練されたラベンダーアッシュ */
+            --text-main: #4a4347;       /* 赤みのある柔らかなチャコールグレー */
+            --text-muted: #9c8e94;      /* 控えめなニュアンスピンクグレー */
+            --border-light: #f2e9eb;    /* 柔らかな境界線 */
+        }
+
+        body {
+            font-family: 'M PLUS Rounded 1c', 'Kosugi Maru', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                /* 知性のきらめきをイメージした繊細なドット背景 */
+                radial-gradient(var(--border-light) 2px, transparent 2px);
+            background-size: 28px 28px;
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 550px;
+            margin: 40px auto;
+            background: var(--panel-bg);
+            padding: 35px 25px;
+            border-radius: 28px;
+            box-shadow: 0 12px 32px rgba(212, 165, 184, 0.12), 0 4px 12px rgba(0, 0, 0, 0.01);
+            border: 3px solid var(--primary-brand); /* 香水瓶やコフレボックスをイメージした上品な枠線 */
+            box-sizing: border-box;
+        }
+        
+        .title-box {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        /* 📖 知識の扉を開くイメージのアイコン装飾 */
+        .title-box::before {
+            content: "📖✨";
+            font-size: 2.2rem;
+            display: block;
+            margin-bottom: 8px;
+            animation: pulse 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.9; }
+            100% { transform: scale(1.06); opacity: 1; }
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--text-main);
+            margin: 0;
+            letter-spacing: 1.5px;
+        }
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 8px 0 0 0;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .search-container {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: bold;
+            border: 2px solid var(--border-light);
+            border-radius: 16px;
+            background-color: #fdfbfc;
+            color: var(--text-main);
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: var(--primary-brand);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(212, 165, 184, 0.15);
+        }
+        .search-container::before {
+            content: "🔍";
+            position: absolute;
+            left: 16px;
+            top: 14px;
+            font-size: 1.1rem;
+            opacity: 0.6;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            margin-bottom: 14px;
+        }
+        
+        /* 💡 綺麗に並ぶコスメやカードをイメージしたボタンデザイン */
+        a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            background: #ffffff;
+            border: 2px solid var(--border-light);
+            border-radius: 18px;
+            color: var(--text-main);
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.005);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        a:hover {
+            border-color: var(--primary-brand);
+            background: #fffbfa;
+            box-shadow: 0 6px 14px rgba(212, 165, 184, 0.12);
+        }
+        a:active {
+            transform: scale(0.98);
+        }
+        
+        .subject-badge {
+            background-color: var(--primary-brand);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            margin-right: 8px;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+        .page-badge {
+            background-color: var(--accent-brand);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .ticket-title {
+            vertical-align: middle;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: bold;
+        }
+        
+        /* ✨ ページを開くボタン（LOOK） */
+        .play-arrow {
+            color: var(--primary-brand);
+            font-weight: 900;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            margin-left: 10px;
+            background: #faf4f6;
+            padding: 6px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+        }
+        a:hover .play-arrow {
+            background: var(--primary-brand);
+            color: white;
+            border-color: var(--primary-brand);
+        }
+        
+        .loading {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px;
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+        .error {
+            color: #ffffff;
+            background: var(--accent-brand);
+            padding: 15px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="title-box">
+        <h1>ROOTS</h1>
+        <p class="subtitle">〜 教科書の先の「なぜ？」に触れるポータル 〜</p>
+    </div>
+    
+    <div class="search-container">
+        <input type="text" id="search-bar" class="search-input" placeholder="教材名、ページ数、キーワードで検索">
+    </div>
+    
+    <div id="loading" class="loading">✨ ライブラリを読み込み中...</div>
+    <ul id="link-list"></ul>
+</div>
+
+<script>
+    // ==========================================
+    // 🛠️ お父様の設定エリア
+    // ==========================================
+    const GITHUB_USER = "HHHKKKnata"; 
+    const GITHUB_REPO = "roots"; 
+    // ==========================================
+
+    const SUBJECTS = [
+        { id: 'math', name: '数学' },
+        { id: 'english', name: '英語' },
+        { id: 'science', name: '理科' },
+        { id: 'social', name: '社会' },
+        { id: 'japanese', name: '国語' }
+    ];
+
+    let allPages = [];
+
+    async function loadAllPages() {
+        const listElement = document.getElementById('link-list');
+        const loadingElement = document.getElementById('loading');
+        
+        try {
+            const fetchPromises = SUBJECTS.map(async (subj) => {
+                const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${subj.id}`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) return [];
+                
+                const files = await response.json();
+                
+                return files
+                    .map(file => {
+                        const decodedName = decodeURIComponent(file.name);
+                        
+                        // ファイル名から数字（ページ数）を抽出するルール
+                        const match = decodedName.match(/^(p?)(\d+)-?(.*?)\.html$/);
+                        if (!match) return null;
+
+                        const pageNum = match[2];
+                        let titleText = match[3] || "";
+
+                        if (!titleText) {
+                            titleText = "の教材を開く";
+                        }
+
+                        return {
+                            fileName: file.name,
+                            pageNum: pageNum,
+                            titleText: titleText,
+                            path: `${subj.id}/${file.name}`,
+                            subjectName: subj.name
+                        };
+                    })
+                    .filter(page => page !== null);
+            });
+
+            const results = await Promise.all(fetchPromises);
+            allPages = results.flat();
+
+            // ページ番号順にソート
+            allPages.sort((a, b) => parseInt(a.pageNum, 10) - parseInt(b.pageNum, 10));
+
+            loadingElement.style.display = 'none';
+            renderList(allPages);
+
+            // 🔍 リアルタイム検索
+            document.getElementById('search-bar').addEventListener('input', (e) => {
+                const keyword = e.target.value.toLowerCase().trim();
+                
+                const filtered = allPages.filter(page => {
+                    return page.subjectName.toLowerCase().includes(keyword) || 
+                           page.titleText.toLowerCase().includes(keyword) ||
+                           page.pageNum.includes(keyword) ||
+                           `p.${page.pageNum}`.includes(keyword) ||
+                           `p${page.pageNum}`.includes(keyword);
+                });
+                
+                renderList(filtered);
+            });
+
+        } catch (error) {
+            loadingElement.style.display = 'none';
+            listElement.innerHTML = `<li class="error">⚠️ ライブラリデータ同期エラー: ${error.message}</li>`;
+        }
+    }
+
+    function renderList(pages) {
+        const listElement = document.getElementById('link-list');
+        listElement.innerHTML = '';
+
+        if (pages.length === 0) {
+            listElement.innerHTML = `<li class="loading">🍃 該当する教材が見つかりません。</li>`;
+            return;
+        }
+
+        pages.forEach(page => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            
+            // 💡 割り当て文字を「Unit.」から「p.」に変更しました
+            a.innerHTML = `
+                <span>
+                    <span class="subject-badge">${page.subjectName}</span>
+                    <span class="page-badge">p.${page.pageNum}</span>
+                    <span class="ticket-title">${page.titleText}</span>
+                </span>
+                <span class="play-arrow">LOOK ▶</span>
+            `;
+            
+            a.href = `./${page.path}`;
+            
+            li.appendChild(a);
+            listElement.appendChild(li);
+        });
+    }
+
+    loadAllPages();
+</script>
+
+</body>
+</html>
