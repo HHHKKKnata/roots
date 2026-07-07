@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英語のしくみ：語順の本質（補語・目的語・前置詞・修飾語M）</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+
+:root {
+--bg-color: #f4f6f9;
+--container-bg: #ffffff;
+--text-color: #333238;
+--text-muted: #6e6b75;
+--primary-brand: #7986cb;   /* インディゴブルー */
+--primary-light: #e8eaf6;
+--accent-c: #4caf50;        /* 補語（C）のグリーン */
+--accent-c-light: #e8f5e9;
+--accent-o: #ff9800;        /* 目的語（O）のオレンジ */
+--accent-o-light: #fff3e0;
+--accent-m: #9c27b0;        /* 修飾語（M）のパープル */
+--accent-m-light: #f3e5f5;
+--border-color: #e0e0e0;
+}
+
+body {
+font-family: 'M PLUS Rounded 1c', 'Kosugi Maru', sans-serif;
+background-color: var(--bg-color);
+color: var(--text-color);
+line-height: 1.8;
+padding: 40px 20px;
+display: flex;
+justify-content: center;
+}
+
+.container {
+max-width: 850px;
+width: 100%;
+background-color: var(--container-bg);
+padding: 40px;
+border-radius: 24px;
+box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+box-sizing: border-box;
+}
+
+header {
+border-bottom: 3px solid var(--primary-brand);
+padding-bottom: 20px;
+margin-bottom: 35px;
+}
+
+h1 { font-size: 1.7rem; margin: 0 0 10px 0; font-weight: 900; color: var(--primary-brand); }
+h2 { font-size: 1.3rem; margin: 30px 0 15px 0; font-weight: 700; border-left: 5px solid var(--primary-brand); padding-left: 12px; }
+
+p { margin: 0 0 15px 0; font-size: 1rem; }
+ul { margin: 0 0 20px 0; padding-left: 20px; }
+li { margin-bottom: 8px; }
+
+/* 🌟 図解ブロックの共通設定 */
+.diagram-box {
+background: #fafafa;
+border: 2px solid var(--border-color);
+border-radius: 16px;
+padding: 24px;
+margin: 20px 0;
+font-weight: bold;
+}
+
+.formula {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 15px;
+font-size: 1.2rem;
+margin-bottom: 15px;
+flex-wrap: wrap;
+}
+
+.box {
+padding: 8px 16px;
+border-radius: 8px;
+color: #fff;
+text-align: center;
+min-width: 100px;
+}
+
+.box-s { background-color: #e53e3e; }
+.box-v { background-color: #3182ce; }
+.box-c { background-color: var(--accent-c); }
+.box-o { background-color: var(--accent-o); }
+.box-m { background-color: var(--accent-m); }
+.box-prep { background-color: #00bcd4; } /* 前置詞のシアン */
+.box-noun { background-color: #607d8b; }
+
+.sign { font-size: 1.5rem; font-weight: 900; color: var(--text-color); }
+
+/* 💡 コラム・重要ポイント */
+.note-panel {
+background-color: var(--primary-light);
+border-radius: 12px;
+padding: 20px;
+margin-top: 25px;
+border-left: 5px solid var(--primary-brand);
+}
+
+.highlight-c { color: var(--accent-c); font-weight: bold; }
+.highlight-o { color: var(--accent-o); font-weight: bold; }
+.highlight-m { color: var(--accent-m); font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+<h1>📖 英語のしくみ：なぜ「語順」がすべてを決めるのか？</h1>
+<p style="color: var(--text-muted); font-weight: bold; margin: 0;">日本語の「てにをは」を持たない言語が、配置だけで意味を決定するメカニズム</p>
+</header>
+
+<!-- セクション1 -->
+<h2>1. 補語（C）と目的語（O）の決定的なちがい</h2>
+<p>動詞の後ろにやってくる言葉が「補語（C）」なのか「目的語（O）」なのか。これらは動詞を挟んで、<b>【主語（S）とイコール（＝）で結べるかどうか】</b>だけで100%見分けることができます。</p>
+
+ 🟢 補語（C）のルール：主語を「説明」する
+<p>補語（Complement）は、主語が「どんな状態か」「何者なのか」を補って説明するパーツです。そのため、必ず<b>「主語 ＝ 後ろのモノ」</b>という関係が成り立ちます。</p>
+
+<div class="diagram-box" style="border-color: var(--accent-c); background-color: var(--accent-c-light);">
+<div class="formula">
+ <div class="box box-s">主語（S）</div>
+ <div class="sign">＝</div>
+ <div class="box box-c">補語（C）</div>
+</div>
+<ul>
+ <li><i>She is a teacher.</i> （彼女 <span class="sign">＝</span> 先生） ➔ 先生は<span class="highlight-c">補語（C）</span></li>
+ <li><i>He looks happy.</i> （彼 <span class="sign">＝</span> 幸せそう） ➔ 幸せは<span class="highlight-c">補語（C）</span></li>
+</ul>
+</div>
+
+ 🟠 目的語（O）のルール：動詞の「ターゲット」
+<p>目的語（Object）は、動詞のエネルギーがぶつかる対象（ターゲット）です。自分（主語）とは<b>完全に別のモノ</b>が後ろにくるため、絶対にイコールになりません。<b>「主語 ≠ 後ろのモノ」</b>の関係です。</p>
+
+<div class="diagram-box" style="border-color: var(--accent-o); background-color: var(--accent-o-light);">
+<div class="formula">
+ <div class="box box-s">主語（S）</div>
+ <div class="sign">≠</div>
+ <div class="box box-o">目的語（O）</div>
+</div>
+<ul>
+ <li><i>I mended the chair.</i> （私 <span class="sign">≠</span> 椅子） ➔ 椅子は<span class="highlight-o">目的語（O）</span></li>
+ <li><i>She loves music.</i> （彼女 <span class="sign">≠</span> 音楽） ➔ 音楽は<span class="highlight-o">目的語（O）</span></li>
+</ul>
+</div>
+
+---
+
+<!-- セクション2 -->
+<h2>2. 「てにをは」がない世界と自動詞・他動詞の罠</h2>
+<p>日本語には「〜を」「〜に」という便利な助詞（てにをは）がありますが、英語には存在しません。英語圏の人々は、助詞の代わりに<b>「動詞のすぐ後ろの特等席に、直接名詞を置くか、置かないか」</b>という配置ルールだけで意味を判断しています。</p>
+
+　🔑 他動詞（ターゲットを直接つかむ動詞）
+<p>他動詞は、直後に名詞をポンと置くだけで、それを自動的に「動詞のターゲット（〜を・〜に）」として認識します。位置そのものが助詞の役割を果たしています。</p>
+<div class="diagram-box">
+<div class="formula">
+ <div class="box box-v">他動詞</div>
+ <div class="sign">➔</div>
+ <div class="box box-noun" style="border: 2px solid var(--accent-o);">名詞（直掴み）</div>
+</div>
+<p style="text-align: center; font-size: 0.9rem; margin: 0; color: var(--text-muted);">
+ <i>I built a chair.</i> （私は / 建てた / 椅子 ➔ 椅子<b>を</b>建てた）
+</p>
+</div>
+
+　⚠️ 自動詞における「怪獣の罠」
+<p>自動詞は、自分ひとりの行動で完結する動詞です（走る、住む、行くなど）。この動詞には、直後にターゲット（名詞）を直接つかみ取る力がありません。</p>
+<p>もし、<i>I live</i>（私は住む）の直後に、そのまま <i>Tokyo</i> を置いてしまうとどうなるでしょうか？</p>
+<div class="diagram-box" style="border-color: #e53e3e; background-color: #fff5f5;">
+<p style="text-align: center; margin: 0; font-size: 1.1rem; color: #e53e3e;">
+ ❌ <i>I live Tokyo.</i>
+</p>
+<p style="margin: 10px 0 0 0; font-size: 0.95rem; font-weight: normal;">
+ 英語には「〜に」がないため、動詞の直後に名詞を置くと他動詞のルール（直掴み）が誤作動してしまいます。結果として、<b>「私は東京（という生身の街）を丸ごとバリバリ生きている」という怪獣のような意味不明のニュアンス</b>になってしまうのです。
+</p>
+</div>
+
+---
+
+<!-- セクション3 -->
+<h2>3. 前置詞（プリポジション）の正体と修飾語（M）</h2>
+<p>上記のような「怪獣の罠」を防ぐために登場するのが<b>前置詞（in, at, to など）</b>です。前置詞の本当の正体は、直接名詞を掴めない自動詞のために、後ろに名詞を安全に接着させる<b>【方向や空間のイメージを持った磁石（アダプター）】</b>です。</p>
+
+<div class="diagram-box">
+<div class="formula">
+ <div class="box box-v">自動詞</div>
+ <div class="sign">＋</div>
+ <div class="box box-prep">前置詞</div>
+ <div class="sign">➔</div>
+ <div class="box box-noun">名詞</div>
+</div>
+<p style="text-align: center; font-size: 0.9rem; margin: 0; color: var(--text-muted);">
+ <i>I live <b>in</b> Tokyo.</i> （住んでいるよ ➔ [inの空間イメージ] ➔ 東京に）
+</p>
+</div>
+
+　🍇 補足：修飾語（M）としての役割
+<p>前置詞と名詞が合体した塊（<code>in Tokyo</code> や <code>in the refrigerator</code> など）は、文法上は主に<b>「修飾語（M ＝ Modifier）」</b>と呼ばれます。文のメイン骨組み（S・V・O・C）に、場所や時間、動的な様子などの豊かな情報をペタペタと付け足す（修飾する）役割を持っています。</p>
+
+<div class="diagram-box" style="border-color: var(--accent-m); background-color: var(--accent-m-light);">
+<div class="formula">
+ <div class="box box-s">The milk</div>
+ <div class="box box-v">is</div>
+ <div class="box box-m">in the refrigerator. (修飾語M)</div>
+</div>
+<p style="margin: 5px 0 0 0; font-size: 0.95rem; font-weight: normal; text-align: center;">
+ ミルクは <span class="sign">＝</span> [冷蔵庫の空間の中という状態・場所に] ➔ あるよ。
+</p>
+</div>
+
+---
+
+<!-- 独自の気づきコラム -->
+<div class="note-panel">
+<strong>💡 視点の本質：動詞ごとに異なる固有のルール</strong><br>
+英語には助詞がないからこそ、すべての意味は「配置（語順）」でコントロールされています。そして、どのような配置を求めるかは<b>「動詞ひとつひとつの性質」</b>によって1対1で決まっています。<br><br>
+例えば、上記の <i>The milk is <b>in the refrigerator</b>.</i> という文において、<code>is</code> という動詞は単なる「＝（イコール）」の記号です。その直後にきた前置詞の塊（<span class="highlight-m">修飾語M</span>）全体が、主語であるミルクのリアルな位置や存在状態を動的に説明する<b>「実質的な補語（C）のような塊」</b>として機能しているのです。このように、形はM（修飾語）であっても、動詞の性質によって文全体の中で果たす役割の深さが変わるのが英語の面白いところです。
+</div>
+
+</div>
+
+</body>
+</html>
