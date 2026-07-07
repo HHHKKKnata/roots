@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ミクロの世界の化学反応シミュレーター</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --container-bg: #ffffff;
+            --primary-color: #6b8e7d;
+            --accent-color: #c98a6b;
+            --text-color: #3d4447;
+            --border-color: #e0e7e9;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .simulation-container {
+            max-width: 850px;
+            width: 100%;
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        .description {
+            font-size: 0.95rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        /* コントロールパネル */
+        .control-panel {
+            background: #fafafa;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            width: 150px;
+            accent-color: var(--accent-color);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-fire { background: #e63946; box-shadow: 0 4px 0 #b82e38; }
+        .btn-fire:active { transform: translateY(3px); box-shadow: none; }
+        .btn-reset { background: #457b9d; box-shadow: 0 4px 0 #2a5978; }
+        .btn-reset:active { transform: translateY(3px); box-shadow: none; }
+
+        /* シミュレーション画面 */
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #1e222b;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* 状況解説板 */
+        .status-board {
+            margin-top: 20px;
+            padding: 15px;
+            background: #edf2f4;
+            border-left: 5px solid var(--primary-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .status-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        /* 凡例 */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+        .dot-h { background: #ffffff; border: 1px solid #ccc; }
+        .dot-o { background: #ff4d4d; }
+        .dot-c { background: #888888; }
+    </style>
+</head>
+<body>
+
+<div class="simulation-container">
+    <h1>🔬 分子の組み替えシミュレーター</h1>
+    <div class="description">「そこそこ満足」から「熱」の刺激をきっかけに「超・大満足」へ組み替わる様子を見よう！</div>
+
+    <div class="control-panel">
+        <div class="control-group">
+            <label>① まず素材を用意しよう</label>
+            <select id="preset-select" onchange="loadPreset()">
+                <option value="water_form">【反応前】水素分子($H_2$) + 酸素分子($O_2$)</option>
+                <option value="co2_form">【反応前】単体炭素($C$) + 酸素分子($O_2$)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>② 熱（エネルギー）を加える</label>
+            <div class="slider-container">
+                <span>よわい</span>
+                <input type="range" id="heat-slider" min="1" max="15" value="2" oninput="updateHeat()">
+                <span>つよい</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>③ きっかけの一撃！</label>
+            <button class="btn btn-fire" onclick="triggerReaction()">🔥 マッチの火をつける</button>
+        </div>
+
+        <div class="control-group">
+            <button class="btn btn-reset" onclick="resetSimulation()">🔄 元に戻す</button>
+        </div>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="simCanvas"></canvas>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><span class="dot dot-h"></span> 水素(H): 手1本</div>
+        <div class="legend-item"><span class="dot dot-o"></span> 酸素(O): 手2本</div>
+        <div class="legend-item"><span class="dot dot-c"></span> 炭素(C): 手4本</div>
+    </div>
+
+    <div class="status-board">
+        <div class="status-title" id="board-title">状態：サボり（安定）モード</div>
+        <div id="board-text">分子たちはそれぞれ今の結びつき（H2やO2）で満足してゴロゴロ飛んでいます。ぶつかり合っても、今の組み合わせを壊してまで新しくなろうとはしません。</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
+
+    // キャンバスサイズ設定
+    canvas.width = container.clientWidth;
+    canvas.height = 400;
+
+    let atoms = [];
+    let bonds = [];
+    let heatLevel = 2;
+    let reactionTriggered = false;
+    let currentPreset = "water_form";
+
+    // 原子クラスの定義
+    class Atom {
+        constructor(type, x, y) {
+            this.type = type; // 'H', 'O', 'C'
+            this.x = x;
+            this.y = y;
+            this.vx = (Math.random() - 0.5) * heatLevel;
+            this.vy = (Math.random() - 0.5) * heatLevel;
+            
+            // 視覚設定
+            if (type === 'H') { this.radius = 12; this.color = '#ffffff'; this.textColor = '#000'; this.hands = 1; }
+            if (type === 'O') { this.radius = 18; this.color = '#ff4d4d'; this.textColor = '#fff'; this.hands = 2; }
+            if (type === 'C') { this.radius = 22; this.color = '#777777'; this.textColor = '#fff'; this.hands = 4; }
+        }
+
+        update() {
+            // 熱レベルに応じた移動スピードの制御
+            let currentSpeed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+            if(currentSpeed > 0) {
+                this.vx = (this.vx / currentSpeed) * (heatLevel * 0.8 + Math.random()*0.4);
+                this.vy = (this.vy / currentSpeed) * (heatLevel * 0.8 + Math.random()*0.4);
+            }
+
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // 壁での跳ね返り
+            if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) this.vx *= -1;
+            if (this.y - this.radius < 0 || this.y + this.radius > canvas.height) this.vy *= -1;
+            
+            // 画面外はみ出し防止ガード
+            this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+            this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = reactionTriggered ? 10 : 0;
+            ctx.shadowColor = this.color;
+            ctx.fill();
+            ctx.shadowBlur = 0; // リセット
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 元素記号の描画
+            ctx.fillStyle = this.textColor;
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(this.type, this.x, this.y);
+        }
+    }
+
+    // 結合データ初期化
+    function createBond(atom1, atom2, count = 1) {
+        bonds.push({ a1: atom1, a2: atom2, count: count });
+    }
+
+    // プリセット（素材状態）のロード
+    function loadPreset() {
+        atoms = [];
+        bonds = [];
+        reactionTriggered = false;
+        document.getElementById('heat-slider').value = 2;
+        heatLevel = 2;
+        
+        currentPreset = document.getElementById('preset-select').value;
+        const w = canvas.width;
+        const h = canvas.height;
+
+        if (currentPreset === "water_form") {
+            document.getElementById('board-title').innerText = "状態：そこそこ満足（サボり）モード";
+            document.getElementById('board-text').innerText = "【反応前：2H₂ + O₂】水素分子(Hが2本手をつないだペア)2組と、酸素分子(Oが2本でガッチリ組んだペア)1組がいます。それぞれ手が埋まっているので、ぶつかっても変化しません。";
+
+            // 水素分子 1組目
+            let h1 = new Atom('H', w*0.2, h*0.3); let h2 = new Atom('H', w*0.2 + 25, h*0.3);
+            // 水素分子 2組目
+            let h3 = new Atom('H', w*0.3, h*0.7); let h4 = new Atom('H', w*0.3 + 25, h*0.7);
+            // 酸素分子 1組
+            let o1 = new Atom('O', w*0.7, h*0.5); let o2 = new Atom('O', w*0.7 + 35, h*0.5);
+
+            atoms.push(h1, h2, h3, h4, o1, o2);
+            createBond(h1, h2, 1);
+            createBond(h3, h4, 1);
+            createBond(o1, o2, 2); // 酸素は二重結合
+
+        } else if (currentPreset === "co2_form") {
+            document.getElementById('board-title').innerText = "状態：そこそこ満足（サボり）モード";
+            document.getElementById('board-text').innerText = "【反応前：C + O₂】炭素の単体(C)と、酸素分子(O₂)が漂っています。炭素は4本の手を内側に隠してウズウズしていますが、今の温度では酸素の強い手を引っぺがすことができません。";
+
+            let c1 = new Atom('C', w*0.25, h*0.5);
+            let o1 = new Atom('O', w*0.7, h*0.5); let o2 = new Atom('O', w*0.7 + 35, h*0.5);
+
+            atoms.push(c1, o1, o2);
+            createBond(o1, o2, 2); // 酸素の二重結合
+        }
+    }
+
+    // スライダー連動
+    function updateHeat() {
+        heatLevel = parseInt(document.getElementById('heat-slider').value);
+        if(!reactionTriggered) {
+            document.getElementById('board-title').innerText = "状態：熱で激しくぶつかり合う分子";
+            document.getElementById('board-text').innerText = "温度が上がると、分子のスピードが速くなり激しく衝突します。しかし、これだけではまだ「今の手」を離して組み替わるほどのキッカケ（壁）を超えられません。火をつけましょう！";
+        }
+    }
+
+    // 火をつけて化学反応をトリガー
+    function triggerReaction() {
+        if(reactionTriggered) return;
+        reactionTriggered = true;
+        
+        // 一気に熱レベルを上げて活性化エネルギーを突破させる演出
+        heatLevel = 15;
+        document.getElementById('heat-slider').value = 15;
+        
+        document.getElementById('board-title').innerText = "🔥 変化の瞬間（化学反応中！）";
+        document.getElementById('board-text').innerText = "火のエネルギーによって古い結びつきが引き裂かれ、原子たちがバラバラになりました！全員の手が余った「超ハングリー状態」です。一瞬で『もっと大満足できる新しい相手』を見つけてカチッと再結合します！";
+
+        // 1秒後に新しい安定分子に組み替える（擬似的な再結合プロセスの視覚化）
+        setTimeout(() => {
+            bonds = []; // 古い結合をすべて解除
+
+            if (currentPreset === "water_form") {
+                // H2O (水分子) 2個へ組み替え
+                // 1個目の水
+                createBond(atoms[4], atoms[0], 1); // O1 - H1
+                createBond(atoms[4], atoms[1], 1); // O1 - H2
+                // 2個目の水
+                createBond(atoms[5], atoms[2], 1); // O2 - H3
+                createBond(atoms[5], atoms[3], 1); // O2 - H4
+                
+                document.getElementById('board-title').innerText = "✨ 反応完了：『水 (H₂O)』の誕生！";
+                document.getElementById('board-text').innerText = "おめでとうございます！2個の「H₂O（水分子）」が完成しました。中心の酸素(手2本)が、2人の水素(手1本)と綺麗に手を繋いでいます。これは『レベル5の超・大満足状態』なので、もう元の気体には戻りません。";
+
+            } else if (currentPreset === "co2_form") {
+                // CO2 (二酸化炭素) 1個へ組み替え
+                createBond(atoms[0], atoms[1], 2); // C1 - O1 (二重結合)
+                createBond(atoms[0], atoms[2], 2); // C1 - O2 (二重結合)
+
+                document.getElementById('board-title').innerText = "✨ 反応完了：『二酸化炭素 (CO₂)』の誕生！";
+                document.getElementById('board-text').innerText = "炭素の持つ4本の手を、左右の酸素が2本ずつ使ってガッチリと両手握手しました！完璧なパズルの完成です。これが二酸化炭素（CO₂）の安定した構造です。";
+            }
+            
+            // 反応が終わったので落ち着かせる（スローダウン）
+            heatLevel = 3;
+            document.getElementById('heat-slider').value = 3;
+        }, 1200);
+    }
+
+    function resetSimulation() {
+        loadPreset();
+    }
+
+    // メインループ
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. 結合（手つなぎ線）の描画
+        bonds.forEach(bond => {
+            ctx.beginPath();
+            ctx.moveTo(bond.a1.x, bond.a1.y);
+            ctx.lineTo(bond.a2.x, bond.a2.y);
+            
+            if(bond.count === 2) {
+                // 二重結合は線を太くするか2本にする。ここでは見やすさのため太い2重線風に表現
+                ctx.strokeStyle = '#ffb703';
+                ctx.lineWidth = 8;
+                ctx.stroke();
+                ctx.strokeStyle = '#1e222b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } else {
+                ctx.strokeStyle = '#8ecae6';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+        });
+
+        // 2. 分子構造を維持するための擬似的な引力（結合している原子同士を近くに保つ）
+        bonds.forEach(bond => {
+            let dx = bond.a2.x - bond.a1.x;
+            let dy = bond.a2.y - bond.a1.y;
+            let distance = Math.sqrt(dx*dx + dy*dy);
+            let targetDist = bond.a1.radius + bond.a2.radius + (bond.count === 2 ? 5 : 10);
+            
+            if (distance > targetDist) {
+                let force = (distance - targetDist) * 0.05;
+                bond.a1.vx += (dx / distance) * force;
+                bond.a1.vy += (dy / distance) * force;
+                bond.a2.vx -= (dx / distance) * force;
+                bond.a2.vy -= (dy / distance) * force;
+            }
+        });
+
+        // 3. 原子の位置更新と描画
+        atoms.forEach(atom => {
+            atom.update();
+            atom.draw();
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    // 初期起動
+    loadPreset();
+    animate();
+</script>
+
+</body>
+</html>
