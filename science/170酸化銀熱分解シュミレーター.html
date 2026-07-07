@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>酸化銀の熱分解シミュレーター</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --container-bg: #ffffff;
+            --primary-color: #6b8e7d;
+            --accent-color: #c98a6b;
+            --text-color: #3d4447;
+            --border-color: #e0e7e9;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .simulation-container {
+            max-width: 850px;
+            width: 100%;
+            background: var(--container-bg);
+            padding: 30px 20px;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        .description {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        /* --- 🛠️ 改良：コントロールパネル全体のレスポンシブ化 --- */
+        .control-panel {
+            background: #fafafa;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch; /* 子要素を横いっぱいに広げる */
+            gap: 10px;
+            background: #ffffff;
+            border: 1px solid #f0f0f0;
+            padding: 14px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+        }
+
+        .control-group label {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            border-left: 3px solid var(--primary-color);
+            padding-left: 8px;
+            margin-bottom: 2px;
+        }
+
+        /* --- 🛠️ 改良：条件選択セレクトボックスのスマホ最適化 --- */
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-select {
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-color);
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #ffffff;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none; /* デフォルトの矢印を消す */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            box-sizing: border-box;
+        }
+
+        .custom-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(107, 142, 125, 0.15);
+        }
+
+        /* カスタム矢印の設置 */
+        .select-wrapper::after {
+            content: "▼";
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        /* --- 🛠️ ボタンの統一感向上 --- */
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-fire { background: #e63946; box-shadow: 0 4px 0 #b82e38; }
+        .btn-fire:active { transform: translateY(3px); box-shadow: none; }
+        .btn-reset { background: #457b9d; box-shadow: 0 4px 0 #2a5978; }
+        .btn-reset:active { transform: translateY(3px); box-shadow: none; }
+
+        /* シミュレーション画面 */
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #1e222b;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* 状況解説板 */
+        .status-board {
+            margin-top: 20px;
+            padding: 15px;
+            background: #edf2f4;
+            border-left: 5px solid var(--primary-color);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .status-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        /* 凡例 */
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+        .dot-ag { background: #b0c4de; border: 1px solid #999; }
+        .dot-o { background: #ff4d4d; }
+
+        /* モバイル向け微調整 */
+        @media (max-width: 500px) {
+            .simulation-container { padding: 20px 12px; }
+            .control-panel { padding: 12px; gap: 12px; }
+            #canvas-container { height: 320px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="simulation-container">
+    <h1>🔬 酸化銀の熱分解シミュレーター</h1>
+    <div class="description">なぜ「2組」用意しないと、酸素分子(O₂)が作れないのかを確かめよう！</div>
+
+    <div class="control-panel">
+        <div class="control-group">
+            <label>① 実験の条件（化学反応式）</label>
+            <div class="select-wrapper">
+                <select id="preset-select" class="custom-select" onchange="loadPreset()">
+                    <option value="wrong_form">❌ 誤り：Ag₂O → Ag + O₂ (1組)</option>
+                    <option value="correct_form">✅ 正しい：2Ag₂O → 4Ag + O₂ (2組)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>② ガスバーナー点火</label>
+            <button class="btn btn-fire" onclick="triggerReaction()">🔥 加熱する</button>
+        </div>
+
+        <div class="control-group">
+            <label>③ 実験のやり直し</label>
+            <button class="btn btn-reset" onclick="resetSimulation()">🔄 試験管を冷やす</button>
+        </div>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="simCanvas"></canvas>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><span class="dot dot-ag"></span> 銀(Ag): 手1本 (金属単体で安定)</div>
+        <div class="legend-item"><span class="dot dot-o"></span> 酸素(O): 手2本 (ペアが必要)</div>
+    </div>
+
+    <div class="status-board">
+        <div class="status-title" id="board-title">状態：加熱前</div>
+        <div id="board-text">準備中...</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
+
+    // 画面幅に合わせてリサイズ
+    function resizeCanvas() {
+        canvas.width = container.clientWidth;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    let atoms = [];
+    let bonds = [];
+    let heatLevel = 1.5;
+    let reactionTriggered = false;
+    let currentPreset = "wrong_form";
+
+    // 音声生成 (Web Audio API)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if(type === 'success') {
+            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // ド
+            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15); // ミ
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        } else if(type === 'fail') {
+            osc.frequency.setValueAtTime(293.66, audioCtx.currentTime); // レ
+            osc.frequency.setValueAtTime(220.00, audioCtx.currentTime + 0.15); // ラ
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        }
+    }
+
+    class Atom {
+        constructor(type, x, y, id) {
+            this.id = id;
+            this.type = type; 
+            this.x = x;
+            this.y = y;
+            this.vx = (Math.random() - 0.5) * heatLevel;
+            this.vy = (Math.random() - 0.5) * heatLevel;
+            
+            if (type === 'Ag') { this.radius = 18; this.color = '#c0c0c0'; this.textColor = '#333'; }
+            if (type === 'O') { this.radius = 15; this.color = '#ff4d4d'; this.textColor = '#fff'; }
+        }
+
+        update() {
+            let currentSpeed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+            if(currentSpeed > 0) {
+                this.vx = (this.vx / currentSpeed) * (heatLevel * 0.8 + Math.random()*0.4);
+                this.vy = (this.vy / currentSpeed) * (heatLevel * 0.8 + Math.random()*0.4);
+            }
+
+            this.x += this.vx;
+            this.y += this.vy;
+
+            if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) this.vx *= -1;
+            if (this.y - this.radius < 0 || this.y + this.radius > canvas.height) this.vy *= -1;
+            
+            this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+            this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = reactionTriggered ? 8 : 0;
+            ctx.shadowColor = this.color;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = this.textColor;
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(this.type, this.x, this.y);
+        }
+    }
+
+    function createBond(atom1, atom2, count = 1) {
+        bonds.push({ a1: atom1, a2: atom2, count: count });
+    }
+
+    function loadPreset() {
+        atoms = [];
+        bonds = [];
+        reactionTriggered = false;
+        heatLevel = 1.5;
+        
+        currentPreset = document.getElementById('preset-select').value;
+        const w = canvas.width;
+        const h = canvas.height;
+
+        if (currentPreset === "wrong_form") {
+            document.getElementById('board-title').innerText = "状態：酸化銀(Ag₂O) が【1組だけ】あります";
+            document.getElementById('board-text').innerText = "酸化銀の塊から分子1組ぶん（Agが2個、Oが1個）だけを取り出しました。中心の酸素（手2本）が左右の銀と手を繋いで落ち着いています。";
+
+            let o1 = new Atom('O', w*0.5, h*0.5, 1);
+            let ag1 = new Atom('Ag', w*0.5 - 35, h*0.5, 2);
+            let ag2 = new Atom('Ag', w*0.5 + 35, h*0.5, 3);
+
+            atoms.push(o1, ag1, ag2);
+            createBond(o1, ag1, 1);
+            createBond(o1, ag2, 1);
+
+        } else if (currentPreset === "correct_form") {
+            document.getElementById('board-title').innerText = "状態：酸化銀(Ag₂O) が【2組ペア】あります";
+            document.getElementById('board-text').innerText = "今度は酸化銀を「2組ぶん」（合計でAgが4個、Oが2個）用意しました。化学反応式の左側に『2』がついている状態（2Ag₂O）です。さあ、火をつけてみましょう！";
+
+            // 1組目
+            let o1 = new Atom('O', w*0.3, h*0.5, 1);
+            let ag1 = new Atom('Ag', w*0.3 - 35, h*0.5, 2);
+            let ag2 = new Atom('Ag', w*0.3 + 35, h*0.5, 3);
+            // 2組目
+            let o2 = new Atom('O', w*0.7, h*0.5, 4);
+            let ag3 = new Atom('Ag', w*0.7 - 35, h*0.5, 5);
+            let ag4 = new Atom('Ag', w*0.7 + 35, h*0.5, 6);
+
+            atoms.push(o1, ag1, ag2, o2, ag3, ag4);
+            createBond(o1, ag1, 1);
+            createBond(o1, ag2, 1);
+            createBond(o2, ag3, 1);
+            createBond(o2, ag4, 1);
+        }
+    }
+
+    function triggerReaction() {
+        if(reactionTriggered) return;
+        reactionTriggered = true;
+        
+        heatLevel = 12; 
+        
+        document.getElementById('board-title').innerText = "🔥 熱分解が始まりました！";
+        document.getElementById('board-text').innerText = "バーナーの熱エネルギーによって手が引き裂かれました！銀(Ag)は金属単体に戻って落ち着きますが、残された酸素(O)はどうなるでしょうか？";
+
+        setTimeout(() => {
+            bonds = []; 
+
+            if (currentPreset === "wrong_form") {
+                document.getElementById('board-title').innerText = "❌ 実験失敗！パズルが完成しません";
+                document.getElementById('board-text').innerText = "銀(Ag)は2個の金属になって落ち着きました。しかし残された酸素(O)は1個だけです。酸素は『手2本』を誰かと繋がないと空気中には存在できません。1人では酸素分子(O₂)になれないため、この反応式は成り立たないのです。";
+                playSound('fail');
+
+            } else if (currentPreset === "correct_form") {
+                createBond(atoms[0], atoms[3], 2); 
+                
+                document.getElementById('board-title').innerText = "✨ 実験成功！ 2Ag₂O → 4Ag + O₂ の完成！";
+                document.getElementById('board-text').innerText = "2組用意したおかげで、酸素(O)が『2個』になりました！お互いの余った手を使ってガッチリ両手で握手し「酸素分子(O₂)」へと変身しました！銀も4個（4Ag）の金属として綺麗に分かれ、すべての原子がハッピーになりました。";
+                playSound('success');
+            }
+            
+            heatLevel = 2;
+        }, 1500);
+    }
+
+    function resetSimulation() {
+        loadPreset();
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        bonds.forEach(bond => {
+            ctx.beginPath();
+            ctx.moveTo(bond.a1.x, bond.a1.y);
+            ctx.lineTo(bond.a2.x, bond.a2.y);
+            if(bond.count === 2) {
+                ctx.strokeStyle = '#ffb703';
+                ctx.lineWidth = 6;
+                ctx.stroke();
+                ctx.strokeStyle = '#1e222b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } else {
+                ctx.strokeStyle = '#8ecae6';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+        });
+
+        bonds.forEach(bond => {
+            let dx = bond.a2.x - bond.a1.x;
+            let dy = bond.a2.y - bond.a1.y;
+            let distance = Math.sqrt(dx*dx + dy*dy);
+            let targetDist = bond.a1.radius + bond.a2.radius + (bond.count === 2 ? 5 : 10);
+            
+            if (distance > targetDist) {
+                let force = (distance - targetDist) * 0.05;
+                bond.a1.vx += (dx / distance) * force;
+                bond.a1.vy += (dy / distance) * force;
+                bond.a2.vx -= (dx / distance) * force;
+                bond.a2.vy -= (dy / distance) * force;
+            }
+        });
+
+        atoms.forEach(atom => {
+            atom.update();
+            atom.draw();
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    loadPreset();
+    animate();
+</script>
+
+</body>
+</html>
