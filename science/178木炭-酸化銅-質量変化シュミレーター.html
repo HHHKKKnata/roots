@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大気連動・原子モデル質量変化シミュレーター</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --container-bg: #ffffff;
+            --primary-color: #6b8e7d;
+            --accent-color: #c98a6b;
+            --text-color: #3d4447;
+            --border-color: #e0e7e9;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .simulation-container {
+            max-width: 850px;
+            width: 100%;
+            background: var(--container-bg);
+            padding: 30px 20px;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        .description {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        /* コントロールパネル */
+        .control-panel {
+            background: #fafafa;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            gap: 10px;
+            background: #ffffff;
+            border: 1px solid #f0f0f0;
+            padding: 14px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+        }
+
+        .control-group label {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            border-left: 3px solid var(--primary-color);
+            padding-left: 8px;
+            margin-bottom: 2px;
+        }
+
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-select {
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-color);
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #ffffff;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            box-sizing: border-box;
+        }
+
+        .select-wrapper::after {
+            content: "▼";
+            font-size: 0.7rem;
+            color: #999;
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-fire { background: #e63946; box-shadow: 0 4px 0 #b82e38; }
+        .btn-fire:active { transform: translateY(3px); box-shadow: none; }
+        .btn-reset { background: #457b9d; box-shadow: 0 4px 0 #2a5978; }
+        .btn-reset:active { transform: translateY(3px); box-shadow: none; }
+
+        /* 電子天秤＆シミュレーションエリア */
+        .scale-display {
+            background: #2b303c;
+            color: #00ffcc;
+            font-family: monospace;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .scale-unit { font-size: 1rem; color: #888; }
+
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 420px;
+            background: #1e222b;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* 状況解説板 */
+        .status-board {
+            margin-top: 20px;
+            padding: 15px;
+            background: #edf2f4;
+            border-left: 5px solid var(--primary-color);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .status-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        /* 凡例 */
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+        .dot-c { background: #555555; border: 1px solid #fff; }
+        .dot-cu { background: #b76e4b; border: 1px solid #fff; }
+        .dot-o2 { background: #ff4d4d; border: 1px solid #fff; width: 20px; border-radius: 6px; text-align: center; color: white; font-size: 8px; line-height: 12px; }
+        .dot-co2 { background: #884dff; border: 1px solid #fff; }
+        .dot-cuo { background: #222222; border: 1px solid #777; }
+
+        @media (max-width: 500px) {
+            .simulation-container { padding: 20px 12px; }
+            .control-panel { padding: 12px; gap: 12px; }
+            #canvas-container { height: 360px; }
+            .scale-display { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="simulation-container">
+    <h1>🔬 大気連動・原子モデル質量変化シミュレーター</h1>
+    <div class="description">お皿の上の「固体」と大気中の「気体分子」のリアルな衝突反応を見てみよう！</div>
+
+    <div class="scale-display">
+        <span>皿の上の質量: </span>
+        <span id="weight-val">20.00</span>
+        <span class="scale-unit">g</span>
+    </div>
+
+    <div class="control-panel">
+        <div class="control-group">
+            <label>① 実験する物質を選ぶ</label>
+            <div class="select-wrapper">
+                <select id="experiment-select" class="custom-select" onchange="loadExperiment()">
+                    <option value="charcoal">🪵 木炭の燃焼（炭素 C + 酸素 O₂）</option>
+                    <option value="copper">🧱 銅の酸化（銅 Cu + 酸素 O₂）</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>② ガスバーナー点火</label>
+            <button class="btn btn-fire" onclick="startReaction()">🔥 加熱する</button>
+        </div>
+
+        <div class="control-group">
+            <label>③ 実験のやり直し</label>
+            <button class="btn btn-reset" onclick="resetSimulation()">🔄 ステンレス皿を冷やす</button>
+        </div>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="simCanvas"></canvas>
+    </div>
+
+    <div class="legend" id="dynamic-legend"></div>
+
+    <div class="status-board">
+        <div class="status-title" id="board-title">状態：加熱前</div>
+        <div id="board-text">準備中...</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
+
+    function resizeCanvas() {
+        canvas.width = container.clientWidth;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // 粒子管理配列
+    let particlesO2 = [];   // O2分子
+    let particlesO = [];    // 単体のO原子(解離中)
+    let particlesCO2 = [];  // CO2分子
+    let dishParticles = []; // 皿の上の固定固体粒子 (C, Cu, CuO)
+
+    let currentMode = "charcoal";
+    let isHeating = false;
+    let displayWeight = 20.00;
+    const atomRadius = 11;
+
+    // 音声効果
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(pitch, duration) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(pitch, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // --- 各種オブジェクトの定義 ---
+
+    // 1. 酸素分子 (O2: 丸2つが結合)
+    class O2Molecule {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.angle = Math.random() * Math.PI * 2;
+            this.rotSpeed = (Math.random() - 0.5) * 0.05;
+            this.vx = (Math.random() - 0.5) * 3;
+            this.vy = (Math.random() - 0.5) * 3;
+        }
+        update() {
+            let m = isHeating ? 1.8 : 1;
+            this.x += this.vx * m;
+            this.y += this.vy * m;
+            this.angle += this.rotSpeed * m;
+
+            // 画面端およびお皿の上空エリアでのバウンド
+            const dishTopY = canvas.height - 75;
+            if (this.x < 20 || this.x > canvas.width - 20) this.vx *= -1;
+            if (this.y < 20 || this.y > dishTopY) this.vy *= -1;
+
+            this.x = Math.max(20, Math.min(canvas.width - 20, this.x));
+            this.y = Math.max(20, Math.min(dishTopY, this.y));
+        }
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+
+            // 2つのO原子を描画
+            for (let offset of [-9, 9]) {
+                ctx.beginPath();
+                ctx.arc(offset, 0, atomRadius, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff4d4d';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('O', offset, 0);
+            }
+            ctx.restore();
+        }
+    }
+
+    // 2. 単体酸素原子 (O: 銅の酸化で解離した際の一時浮遊状態)
+    class OAtom {
+        constructor(x, y, vx, vy) {
+            this.x = x;
+            this.y = y;
+            this.vx = vx || (Math.random() - 0.5) * 3;
+            this.vy = vy || -Math.random() * 3 - 1; // 上方向に弾け飛ぶ
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            const dishTopY = canvas.height - 75;
+            if (this.x < 15 || this.x > canvas.width - 15) this.vx *= -1;
+            if (this.y < 15 || this.y > dishTopY) this.vy *= -1;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, atomRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff4d4d';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('O', this.x, this.y);
+        }
+    }
+
+    // 3. 二酸化炭素分子 (CO2: O-C-O の直鎖)
+    class CO2Molecule {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.vx = (Math.random() - 0.5) * 1.5;
+            this.vy = -1.5 - Math.random() * 1; // プカプカ上昇
+            this.angle = Math.random() * Math.PI;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.x < 25 || this.x > canvas.width - 25) this.vx *= -1;
+            if (this.y < 20) this.vy *= -1; // 天井バウンド
+            if (this.y > canvas.height - 75) this.vy *= -1;
+        }
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+
+            // 両端のO
+            for (let offset of [-14, 14]) {
+                ctx.beginPath();
+                ctx.arc(offset, 0, atomRadius - 1, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff4d4d';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.stroke();
+                ctx.fillStyle = '#fff';
+                ctx.font = '8px sans-serif';
+                ctx.fillText('O', offset, 1);
+            }
+            // 真ん中のC
+            ctx.beginPath();
+            ctx.arc(0, 0, atomRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#555555';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.stroke();
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('C', 0, 0);
+
+            ctx.restore();
+        }
+    }
+
+    // 4. 皿の上の固定固体粒子 (C, Cu, CuO)
+    class DishSolid {
+        constructor(type, x, y) {
+            this.type = type; // 'C', 'Cu', 'CuO'
+            this.x = x;
+            this.y = y;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, atomRadius + 1, 0, Math.PI * 2);
+            if (this.type === 'C') ctx.fillStyle = '#555555';
+            if (this.type === 'Cu') ctx.fillStyle = '#b76e4b';
+            if (this.type === 'CuO') ctx.fillStyle = '#222222';
+
+            ctx.fill();
+            ctx.strokeStyle = this.type === 'CuO' ? '#777' : '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(this.type, this.x, this.y);
+        }
+    }
+
+
+    // --- シミュレーション制御関数 ---
+
+    function loadExperiment() {
+        currentMode = document.getElementById('experiment-select').value;
+        
+        // 全配列の初期化
+        particlesO2 = [];
+        particlesO = [];
+        particlesCO2 = [];
+        dishParticles = [];
+        isHeating = false;
+
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // 空中にはじめからO2分子（丸2つ結合）を8個漂わせる
+        for (let i = 0; i < 8; i++) {
+            particlesO2.push(new O2Molecule(
+                50 + Math.random() * (w - 100),
+                40 + Math.random() * (h - 180)
+            ));
+        }
+
+        const legend = document.getElementById('dynamic-legend');
+
+        if (currentMode === "charcoal") {
+            displayWeight = 20.00;
+            document.getElementById('weight-val').innerText = displayWeight.toFixed(2);
+            document.getElementById('board-title').innerText = "【木炭の実験】状態：加熱前";
+            document.getElementById('board-text').innerText = "炭素（C）はお皿の上に【固体】としてがっちり固定されています。大気中には2個のOが結合した「酸素分子（O₂）」が飛び回っています。";
+            
+            legend.innerHTML = `
+                <div class="legend-item"><span class="dot dot-c"></span> 炭素(C)[お皿に固定]</div>
+                <div class="legend-item"><span class="dot dot-o2">O-O</span> 酸素分子(O₂)[大気を浮遊]</div>
+                <div class="legend-item"><span class="dot dot-co2"></span> 二酸化炭素(CO₂)[気体として上空へ拡散]</div>
+            `;
+
+            // 炭素(C)を皿の上にきれいに並べて固定 (浮かび上がらない)
+            for (let i = 0; i < 8; i++) {
+                let rx = w * 0.36 + (i % 4) * 28 + (Math.random() - 0.5) * 5;
+                let ry = h - 45 + Math.floor(i / 4) * 12;
+                dishParticles.push(new DishSolid('C', rx, ry));
+            }
+
+        } else if (currentMode === "copper") {
+            displayWeight = 20.00;
+            document.getElementById('weight-val').innerText = displayWeight.toFixed(2);
+            document.getElementById('board-title').innerText = "【銅の実験】状態：加熱前";
+            document.getElementById('board-text').innerText = "銅（Cu）の粉末がお皿の上に固定されています。加熱すると、大気中のO₂分子がぶつかった瞬間に2つの「O」にバラバラ（解離）になります。";
+            
+            legend.innerHTML = `
+                <div class="legend-item"><span class="dot dot-cu"></span> 銅(Cu)[お皿に固定]</div>
+                <div class="legend-item"><span class="dot dot-o2">O-O</span> 酸素分子(O₂)[大気を浮遊]</div>
+                <div class="legend-item"><span class="dot dot-cuo"></span> 酸化銅(CuO)[酸素を奪って皿に固定]</div>
+            `;
+
+            // 銅(Cu)を皿の上にきれいに並べて固定
+            for (let i = 0; i < 8; i++) {
+                let rx = w * 0.36 + (i % 4) * 28 + (Math.random() - 0.5) * 5;
+                let ry = h - 45 + Math.floor(i / 4) * 12;
+                dishParticles.push(new DishSolid('Cu', rx, ry));
+            }
+        }
+    }
+
+    function startReaction() {
+        if (isHeating) return;
+        isHeating = true;
+        document.getElementById('board-title').innerText = "🔥 ガスバーナーで加熱中！";
+
+        if (currentMode === "charcoal") {
+            document.getElementById('board-text').innerText = "お皿の上の固定された炭素（C）に、大気中の酸素分子（O₂）が衝突！ その場で3つの原子がガチッと手を結び『CO₂分子』になって上空へ飛び去っていきます！";
+        } else {
+            document.getElementById('board-text').innerText = "O₂分子が衝突して2つのO原子に分かれました！1つは銅と合体して黒い酸化銅（CuO）として皿に固定され、余ったもう1つのO原子は浮遊し、他のOと再結合してO₂に戻ります！";
+        }
+
+        // 一定間隔でミクロな化学反応をトリガー
+        let reactionInterval = setInterval(() => {
+            if (!isHeating) { clearInterval(reactionInterval); return; }
+
+            if (currentMode === "charcoal") {
+                // 【木炭】Cが残っており、かつO2分子が存在するとき
+                let cIndex = dishParticles.findIndex(p => p.type === 'C');
+                if (cIndex !== -1 && particlesO2.length > 0) {
+                    
+                    // 1. お皿の上の固定Cを取り除く
+                    let targetC = dishParticles.splice(cIndex, 1)[0];
+                    // 2. 空中のO2分子を1つ消去
+                    particlesO2.pop();
+                    
+                    // 3. 消えたCの座標のすぐ上で新しく「CO2分子」を生成して空気中に放出！
+                    particlesCO2.push(new CO2Molecule(targetC.x, canvas.height - 70));
+                    
+                    displayWeight -= 1.50; // お皿の上の質量が減少
+                    document.getElementById('weight-val').innerText = displayWeight.toFixed(2);
+                    playSound(400, 0.1);
+                }
+            } else {
+                // 【銅の酸化】Cuが残っており、かつO2分子が存在するとき
+                let cuIndex = dishParticles.findIndex(p => p.type === 'Cu');
+                if (cuIndex !== -1 && particlesO2.length > 0) {
+                    
+                    // 1. O2分子が1つ消滅し、お皿の近くで「2つのO原子」にバラバラ（解離）になる
+                    let targetO2 = particlesO2.pop();
+                    
+                    // 2. 1つのOはすぐさま目の前のCuとくっついて黒い「CuO」に変身し、皿に固定されたままになる
+                    dishParticles[cuIndex].type = 'CuO';
+                    
+                    // 3. もう1つの余ったO原子は、上空へと勢いよく弾け飛ぶ（単体O原子の浮遊開始）
+                    particlesO.push(new OAtom(targetO2.x, canvas.height - 75));
+
+                    displayWeight += 1.25; // 大気の酸素を取り込んで質量増加
+                    document.getElementById('weight-val').innerText = displayWeight.toFixed(2);
+                    playSound(550, 0.08);
+                }
+            }
+
+            // 反応終了判定
+            let hasC = dishParticles.some(p => p.type === 'C');
+            let hasCu = dishParticles.some(p => p.type === 'Cu');
+            if ((currentMode === "charcoal" && !hasC) || (currentMode === "copper" && !hasCu)) {
+                isHeating = false;
+                clearInterval(reactionInterval);
+                setTimeout(endReaction, 1200);
+            }
+
+        }, 1500); // じっくり見せたいので1.5秒間隔
+    }
+
+    function endReaction() {
+        if (currentMode === "charcoal") {
+            document.getElementById('board-title').innerText = "✨ 木炭の実験完了：気体が大気に広がり、皿は軽くなった！";
+            document.getElementById('board-text').innerText = "【解説】お皿の上の固体Cは減りましたが、空気中を見てください。結合した『CO₂分子』がその数だけしっかりと増えて部屋を漂っています。お皿は軽くなりましたが、気体を逃がさなければ全体の重さは同じです。";
+            playSound(659, 0.3);
+        } else {
+            document.getElementById('board-title').innerText = "✨ 銅の実験完了：余ったOはO₂に戻り、大気はスッキリ、皿は重くなった！";
+            document.getElementById('board-text').innerText = "【解説】飛び散った単体のO原子たちは、浮遊する中で「お互いに出会ってガッチャンコ」と結びつき、元の安定した『O₂分子』に戻っていきました！ 最終的に空気中のO₂の総数は減り、奪われた酸素の分だけ、お皿の上が重くなったのが分かりますね。";
+            playSound(880, 0.3);
+        }
+    }
+
+    // 空気中の単体O原子同士が出会ったときの再結合チェック
+    function checkOAtomRecombination() {
+        if (particlesO.length >= 2) {
+            for (let i = 0; i < particlesO.length; i++) {
+                for (let j = i + 1; j < particlesO.length; j++) {
+                    let dx = particlesO[i].x - particlesO[j].x;
+                    let dy = particlesO[i].y - particlesO[j].y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    // 浮遊するO原子同士が一定距離内に近づいたら合体！
+                    if (dist < 25) {
+                        let midX = (particlesO[i].x + particlesO[j].x) / 2;
+                        let midY = (particlesO[i].y + particlesO[j].y) / 2;
+                        
+                        // 2つの単体O原子を消し、1つのO2分子を生成
+                        particlesO.splice(j, 1);
+                        particlesO.splice(i, 1);
+                        
+                        particlesO2.push(new O2Molecule(midX, midY));
+                        playSound(700, 0.05);
+                        return; // 1フレームに1ペアまで
+                    }
+                }
+            }
+        }
+    }
+
+    function resetSimulation() {
+        loadExperiment();
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // 1. ステンレス皿を「アニメーション枠の最下部」に描画
+        const dishY = h - 30;
+        ctx.beginPath();
+        ctx.ellipse(w * 0.5, dishY, w * 0.32, 16, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#9aa0a6';
+        ctx.fill();
+        ctx.strokeStyle = '#70757a';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // 皿の台座
+        ctx.fillStyle = '#5f6368';
+        ctx.fillRect(w * 0.46, h - 14, w * 0.08, 14);
+
+        // 2. 加熱中の「炎」のエフェクト（お皿の下から包むように）
+        if (isHeating) {
+            ctx.beginPath();
+            ctx.moveTo(w * 0.35, dishY + 5);
+            ctx.quadraticCurveTo(w * 0.5, h - 85 - (Math.random() * 20), w * 0.65, dishY + 5);
+            ctx.fillStyle = 'rgba(230, 57, 70, 0.5)';
+            ctx.fill();
+        }
+
+        // 3. 各粒子の更新と描画
+        particlesO2.forEach(p => { p.update(); p.draw(); });
+        particlesCO2.forEach(p => { p.update(); p.draw(); });
+        
+        // 銅の酸化用の単体O原子
+        particlesO.forEach(p => { p.update(); p.draw(); });
+        if (currentMode === "copper") {
+            checkOAtomRecombination();
+        }
+
+        // お皿の上の固体粒子
+        dishParticles.forEach(p => { p.draw(); });
+
+        requestAnimationFrame(animate);
+    }
+
+    loadExperiment();
+    animate();
+</script>
+
+</body>
+</html>
