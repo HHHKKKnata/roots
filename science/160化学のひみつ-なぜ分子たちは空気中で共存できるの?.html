@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>化学のひみつ：分子たちがきれいに共存できる理由</title>
+<style>
+/* 📖 上品で透明感のあるフェミニン・くすみパステルデザイン */
+@import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+
+:root {
+--bg-color: #fbf8f7;        /* ほんのりピンクを帯びた優しいホワイト */
+--container-bg: #ffffff;    /* 清潔感のある白 */
+--primary-brand: #d4a5b8;   /* 落ち着いた大人のミスティピンク */
+--primary-light: #fbf3f6;   /* 柔らかな背景用薄ピンク */
+--accent-brand: #b1a7cb;    /* 洗練されたラベンダーアッシュ */
+--accent-light: #f7f5fa;    /* ハイライト用淡いラベンダー */
+--text-color: #4a4347;       /* 赤みのある柔らかなチャコールグレー */
+--text-muted: #9c8e94;      /* 控えめなニュアンスピンクグレー */
+--border-color: #f2e9eb;    /* 柔らかな境界線 */
+--box-shadow: 0 12px 32px rgba(212, 165, 184, 0.12), 0 4px 12px rgba(0, 0, 0, 0.01);
+}
+
+body {
+font-family: 'M PLUS Rounded 1c', 'Kosugi Maru', "Helvetica Neue", Arial, sans-serif;
+background-color: var(--bg-color);
+background-image: 
+    /* 知性のきらめきをイメージした繊細なドット背景 */
+    radial-gradient(var(--border-color) 2px, transparent 2px);
+background-size: 28px 28px;
+color: var(--text-color);
+line-height: 1.8;
+letter-spacing: 0.03em;
+margin: 0;
+padding: 40px 20px;
+display: flex;
+justify-content: center;
+}
+
+.container {
+max-width: 800px;
+width: 100%;
+background-color: var(--container-bg);
+padding: 50px 40px;
+border-radius: 28px;
+box-shadow: var(--box-shadow);
+border: 3px solid var(--primary-brand); /* コフレボックスをイメージした上品な枠線 */
+box-sizing: border-box;
+}
+
+header {
+border-bottom: 3px solid var(--primary-brand);
+padding-bottom: 24px;
+margin-bottom: 40px;
+text-align: center;
+}
+
+h1 {
+font-size: 1.75rem;
+color: var(--text-color);
+margin: 0 0 12px 0;
+font-weight: 900;
+letter-spacing: 1px;
+}
+
+.subtitle {
+font-size: 1rem;
+color: var(--text-muted);
+margin: 0;
+font-weight: 700;
+}
+
+/* セクションデザイン */
+.section-title {
+font-size: 1.35rem;
+color: var(--primary-brand);
+margin-top: 45px;
+margin-bottom: 24px;
+font-weight: bold;
+border-left: 5px solid var(--primary-brand);
+padding-left: 12px;
+}
+
+h3 {
+font-size: 1.1rem;
+color: var(--text-color);
+margin-top: 28px;
+margin-bottom: 12px;
+font-weight: 700;
+}
+
+p {
+margin-bottom: 20px;
+font-size: 1.05rem;
+text-align: justify;
+}
+
+/* 強調マーカー */
+strong {
+color: var(--primary-brand);
+background: linear-gradient(transparent 70%, #f7e9ef 70%);
+padding: 0 2px;
+font-weight: bold;
+}
+
+/* 化学式自体の太字用 */
+.chem-formula {
+font-weight: 900;
+color: var(--text-color);
+}
+
+/* リッチボックス（区切り・解説の視覚化） */
+.info-box {
+background-color: #ffffff;
+border: 1px solid var(--border-color);
+border-left: 4px solid var(--accent-brand);
+border-radius: 12px;
+padding: 24px;
+margin: 24px 0;
+box-shadow: 0 4px 6px rgba(0,0,0,0.005);
+}
+
+.info-box-title {
+font-weight: bold;
+color: var(--accent-brand);
+margin-top: 0;
+margin-bottom: 12px;
+font-size: 1.1rem;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.example-box {
+background-color: var(--primary-light);
+border-radius: 18px;
+padding: 24px;
+margin: 24px 0;
+border: 1px solid var(--border-color);
+}
+
+.example-title {
+font-weight: bold;
+color: var(--primary-brand);
+margin-top: 0;
+margin-bottom: 12px;
+font-size: 1.1rem;
+}
+
+/* リッチテーブル構造 */
+.custom-table {
+width: 100%;
+border-collapse: collapse;
+margin: 28px 0;
+font-size: 0.95rem;
+}
+
+.custom-table th {
+background-color: var(--primary-brand);
+color: white;
+font-weight: bold;
+text-align: left;
+padding: 14px;
+border: 1px solid var(--primary-brand);
+}
+
+.custom-table td {
+padding: 14px;
+border: 1px solid var(--border-color);
+background-color: #fff;
+}
+
+.custom-table tr:nth-child(even) td {
+background-color: #fffbfa;
+}
+
+/* 聴覚・読み上げ専用エリア（隠蔽用） */
+.speech-only {
+position: absolute;
+color: transparent;
+font-size: 0px;
+width: 1px;
+height: 1px;
+overflow: hidden;
+}
+
+@media (max-width: 600px) {
+body { padding: 20px 10px; }
+.container { padding: 24px 16px; }
+h1 { font-size: 1.4rem; }
+.custom-table, .custom-table tbody, .custom-table tr, .custom-table td, .custom-table th {
+display: block;
+width: 100%;
+}
+.custom-table th { text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<article class="container">
+<header>
+<h1>化学のひみつ：なぜ分子たちは空気中で共存できるの？</h1>
+<p class="subtitle">中学2年生のための化学式・化学反応式の本質理解</p>
+</header>
+
+<div class="text-section" aria-hidden="true">
+
+<section>
+<h2 class="section-title">1. 基本ルール：「原子の手」の数</h2>
+<p>教科書ではただ丸暗記させられる化学式ですが、実は原子たちが伸ばせる<strong>「手の数」</strong>は最初からきっちり決まっています。この手が余ることなく、ぴったりパズルのように組み合わさることで分子が作られます。</p>
+
+<div class="example-box">
+<div class="example-title">💡 魔法の呪文「ハおねちゃん（1、2、3、4）」</div>
+<table class="custom-table">
+<thead>
+<tr>
+<th>原子の名前（記号）</th>
+<th>伸ばせる手の数</th>
+<th>パズルのイメージ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>水素 (H)</strong></td>
+<td>1本</td>
+<td>手は1本だけ。誰か1人と繋がると大満足。</td>
+</tr>
+<tr>
+<td><strong>酸素 (O)</strong></td>
+<td>2本</td>
+<td>手が2本あるので、両手で別々の原子と繋がれます。</td>
+</tr>
+<tr>
+<td><strong>窒素 (N)</strong></td>
+<td>3本</td>
+<td>手が3本。N同士で3本すべての手を使ってガッチリ結びつきます。</td>
+</tr>
+<tr>
+<td><strong>炭素 (C)</strong></td>
+<td>4本</td>
+<td>手が4本もあるので、たくさんの原子を繋ぐ中心になれます。</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section>
+<h2 class="section-title">2. なぜ色々な分子が同じ部屋で「ごちゃ混ぜ」になれるの？</h2>
+<p>「手を繋ぎたがっている原子たちが同じ部屋にいたら、次々に新しい組み合わせに変わってしまわないの？」という疑問が湧くかもしれません。しかし、ふだんの空気の中では、窒素分子（<span class="chem-formula"><strong>N<sub>2</sub></strong></span>）や酸素分子（<span class="chem-formula"><strong>O<sub>2</sub></strong></span>）、水蒸気（<span class="chem-formula"><strong>H<sub>2</sub>O</strong></span>）は何億個ぶつかり合っても<strong>今の形のまま平和に共存</strong>しています。</p>
+
+<div class="info-box">
+<div class="info-box-title">🚪 理由：みんなすでに「大満足してゴロゴロしている」から</div>
+<p>バラバラの「原子」のときは、手が余っていてギラギラした状態（高エネルギー）ですが、一度綺麗に手を繋ぎ合って「分子」になった瞬間、全員の手がピッタリ埋まります。これは化学で<strong>「安定（エネルギーが低い状態）」</strong>と呼びます。</p>
+<p>お腹がいっぱいになってソファでゴロゴロ満足している人たちは、隣に別の人が来てもわざわざケンカを売りに行きません。今の気温（一般的な環境）では、彼らはぶつかり合っても「あ、ごめん」と跳ね返るだけで、相手の腕を引っぺがして新しく結びつこうとはしないのです。</p>
+</div>
+</section>
+
+<section>
+<h2 class="section-title">3. 火をつけると「化学反応（爆発）」が起きるワケ</h2>
+<p>では、水素（<span class="chem-formula"><strong>H<sub>2</sub></strong></span>）と酸素（<span class="chem-formula"><strong>O<sub>2</sub></strong></span>）が混ざった空気に、マッチで「火」をつけた瞬間に激しく爆発して水（<span class="chem-formula"><strong>H<sub>2</sub>O</strong></span>）に変わるのはなぜでしょうか？</p>
+
+<h3>分子的には「今の満足」より「もっと最高の満足」がある</h3>
+<p>実は、分子たちの満足度にはレベルがあります。水素分子や酸素分子のままでいる状態が「レベル1の満足」だとすると、水（<span class="chem-formula"><strong>H<sub>2</sub>O</strong></span>）になる状態は<strong>「レベル5の超・大満足」</strong>なのです。宇宙のルールとして、彼らは本当はもっとラクで安定できる「水」になりたがっています。</p>
+
+<div class="example-box">
+<div class="example-title">🔥 火（熱）は、めんどくさがりな壁を壊すエネルギー</div>
+<p>一応は手が埋まって満足しているので、分子たちは「わざわざ今の手を離して、新しい相手と手を繋ぎ直すのめんどくさいな…」とサボっています。ここに<strong>「火（熱エネルギー）」</strong>という強烈な一撃が加わると、分子たちが激しく揺さぶられ、サボり壁（活性化エネルギー）を一気に飛び越えます。</p>
+<p><strong>「よっしゃ！今の手を離して、もっと最高な相手（水）に組み替わろうぜ！」</strong>と一斉にバラバラになって繋ぎ直す瞬間、これが激しい化学反応の正体です。</p>
+</div>
+</section>
+
+<section>
+<h2 class="section-title">4. 水素分子（<span class="chem-formula"><strong>H<sub>2</sub></strong></span>）が空気中に「ほぼ無い」2つのひみつ</h2>
+<p>空気の成分を習うとき、窒素が約78%、酸素が約21%と習いますが、水素はほとんど載っていません（わずか0.00005%）。これには地球ならではの理由があります。</p>
+
+<div class="info-box">
+<div class="info-box-title">🎈 ひみつ①：軽すぎて地球から「脱走」してしまう</div>
+<p>水素はすべての原子の中で圧倒的に一番小さく、一番軽いです。そのため、地球の重力（引っ張る力）だけでは空気中に繋ぎ止めておくことができません。太陽の光などで温められると、おそるべきスピードでビューンと大気の天井を突き抜けて、<strong>宇宙空間へフワフワと逃げ出してしまう</strong>のです。</p>
+</div>
+
+<div class="info-box">
+<div class="info-box-title">⚡ ひみつ②：すぐ「水」に化けてしまう</div>
+<p>地球上で火山活動などによってたまに水素分子が生まれても、地球の空気中には「レベル5の超・大満足相手」である酸素（<span class="chem-formula"><strong>O<sub>2</sub></strong></span>）がウジャウジャいます。静電気や雷、太陽光などのちょっとしたきっかけで、宇宙へ逃げる前にすぐ酸素に捕まり、<strong>水（<span class="chem-formula"><strong>H<sub>2</sub>O</strong></span>）の姿に変身させられてしまう</strong>ため、水素分子のままではいられないのです。</p>
+</div>
+</section>
+
+</div>
+
+<div class="speech-only">
+<p>（音声読み上げ用テキストエリア：元のファイルをそのまま保持しています）</p>
+</div>
+</article>
+
+</body>
+</html>
