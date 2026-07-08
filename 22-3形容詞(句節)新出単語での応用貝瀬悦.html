@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英語のしくみ：シンガポール旅行編（長い主語のルール）</title>
+<style>
+/* 🎨 上品で透明感のあるくすみパステル・大画面解説用デザイン */
+@import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+
+:root {
+--bg-color: #f4f6f9;
+--container-bg: #ffffff;
+--primary-brand: #a7b7cb;   /* ブルーアッシュ */
+--primary-light: #f0f3f7;
+--accent-brand: #d4bda5;    /* ミスティベージュ */
+--accent-light: #fbf6f3;
+--text-color: #41434a;
+--text-muted: #8a8e94;
+--border-color: #e6eaed;
+--box-shadow: 0 12px 32px rgba(167, 183, 203, 0.15);
+}
+
+body {
+font-family: 'M PLUS Rounded 1c', 'Kosugi Maru', sans-serif;
+background-color: var(--bg-color);
+background-image: radial-gradient(var(--border-color) 2px, transparent 2px);
+background-size: 28px 28px;
+color: var(--text-color);
+line-height: 1.8;
+padding: 40px 20px;
+display: flex;
+justify-content: center;
+}
+
+.container {
+max-width: 1000px;
+width: 100%;
+background-color: var(--container-bg);
+padding: 40px;
+border-radius: 28px;
+box-shadow: var(--box-shadow);
+border: 3px solid var(--primary-brand);
+box-sizing: border-box;
+}
+
+header {
+border-bottom: 3px solid var(--primary-brand);
+padding-bottom: 20px;
+margin-bottom: 40px;
+text-align: center;
+}
+
+h1 { font-size: 1.6rem; margin: 0 0 12px 0; font-weight: 900; }
+.subtitle { font-size: 0.95rem; color: var(--text-muted); margin: 0; font-weight: 700; text-align: left; line-height: 1.6; }
+
+.s { color: #e53e3e; font-weight: bold; }
+.v { color: #3182ce; font-weight: bold; }
+.m { color: #dd6b20; font-weight: bold; }
+
+.sim-card {
+background: #ffffff;
+border: 2px solid var(--border-color);
+border-radius: 24px;
+padding: 30px;
+margin-bottom: 40px;
+position: relative;
+}
+
+.card-title {
+font-size: 1.2rem;
+margin: 0 0 20px 0;
+font-weight: bold;
+color: var(--text-color);
+border-left: 5px solid var(--accent-brand);
+padding-left: 12px;
+}
+
+/* 4構造コントロールタブ */
+.param-controller {
+display: flex;
+background: var(--bg-color);
+border-radius: 14px;
+padding: 6px;
+margin-bottom: 25px;
+gap: 6px;
+}
+
+.step-btn {
+flex: 1;
+padding: 12px;
+border: none;
+background: transparent;
+color: var(--text-muted);
+font-family: inherit;
+font-weight: bold;
+font-size: 0.85rem;
+cursor: pointer;
+border-radius: 10px;
+transition: all 0.3s ease;
+text-align: center;
+}
+
+.step-btn.active {
+background: #ffffff;
+color: var(--primary-brand);
+box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* アニメーションステージ */
+.stage-field {
+position: relative;
+background: #f9fafc;
+border: 2px dashed var(--primary-brand);
+border-radius: 16px;
+margin-bottom: 25px;
+padding: 20px;
+box-sizing: border-box;
+}
+
+.stage-row {
+display: flex;
+flex-wrap: wrap;
+gap: 12px;
+align-items: center;
+min-height: 65px;
+padding: 10px 0;
+}
+
+.row-label {
+width: 100%;
+font-size: 0.8rem;
+color: var(--text-muted);
+font-weight: bold;
+margin-bottom: 4px;
+border-bottom: 1px solid var(--border-color);
+}
+
+/* 🧱 言葉のボックス構造 */
+.box-slot {
+padding: 10px 16px;
+border-radius: 12px;
+font-size: 0.95rem;
+font-weight: bold;
+text-align: center;
+box-sizing: border-box;
+white-space: nowrap;
+}
+
+.slot-origin {
+background: #ffffff;
+border: 2px dashed #cbd5e1;
+color: #94a3b8;
+}
+
+.slot-ghost {
+position: absolute;
+background: var(--accent-light);
+border: 2px solid var(--accent-brand);
+color: var(--text-color);
+box-shadow: 0 6px 16px rgba(212, 165, 184, 0.15);
+z-index: 10;
+transition: transform 1.2s cubic-bezier(0.25, 0.8, 0.25, 1), 
+            width 1.2s cubic-bezier(0.25, 0.8, 0.25, 1),
+            height 1.2s cubic-bezier(0.25, 0.8, 0.25, 1),
+            opacity 1.2s ease;
+backface-visibility: hidden;
+}
+
+/* 💬 解説パネル */
+.explanation-panel {
+background: var(--primary-light);
+border-left: 5px solid var(--primary-brand);
+border-radius: 0 16px 16px 0;
+padding: 24px;
+font-size: 0.95rem;
+min-height: 80px;
+}
+
+.exp-text {
+display: none;
+animation: fadeIn 0.5s ease forwards;
+}
+
+.exp-text.active {
+display: block;
+}
+
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(4px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+body { padding: 10px; }
+.container { padding: 20px 12px; }
+.param-controller { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+<h1>🇸🇬 テスト範囲連動：シンガポール旅行編で学ぶ「長い主語」のルール</h1>
+<div class="subtitle">
+ <strong>💡 教科書の単語で応用にチャレンジ！</strong><br>
+ 今回のテスト範囲に出てくる新出単語（mosque, flight, airportなど）を使って、さらに一歩進んだ「長い形容詞（句・節）がボス名詞を修飾するルール」をシミュレーターで体感しましょう！
+</div>
+</header>
+
+<div class="sim-card" id="card-1">
+<div class="card-title">例題①：動詞を含まない塊【形容詞句】の並び替え</div>
+<p style="font-size: 1rem; margin-bottom: 20px; color: var(--text-muted);">
+テーマ文：「伝統的な、タマネギ型の、大きな、あのアラブ街のモスクは、とても有名です。」
+</p>
+
+<div class="param-controller">
+<button class="step-btn active" id="btn-1-1" onclick="goStep(1, 1)">1. 日本語のならび</button>
+<button class="step-btn" id="btn-1-2" onclick="goStep(1, 2)">2. 形容詞（句）の並び替え</button>
+<button class="step-btn" id="btn-1-3" onclick="goStep(1, 3)">3. 文節（動詞の前）に配置</button>
+<button class="step-btn" id="btn-1-4" onclick="goStep(1, 4)">4. 英語の筆記（完成）</button>
+</div>
+
+<div class="stage-field" id="field-1">
+<div class="row-label">【スタート】日本語の自由な並び</div>
+<div class="stage-row" id="row-origin-1"></div>
+
+<div style="margin-top: 15px; display:none;" class="row-label" id="label-middle-1">【脳内ステップ】英語の引き出し順（①感想・特徴 ➔ ②サイズ ➔ ③形状 ➔ ボス名詞）</div>
+<div class="stage-row" id="row-middle-1" style="display:none; background: #f0f3f7; border-radius:10px; padding:5px 10px;"></div>
+
+<div style="margin-top: 25px;" class="row-label">【ゴール】英文法の配置エリア（主語 ➔ 動詞 ➔ 補語）</div>
+<div class="stage-row" id="row-target-1"></div>
+</div>
+
+<div class="explanation-panel">
+<div class="exp-text active" id="exp-1-1">
+🎯 <strong>【構造①：日本語のならび】</strong><br>
+日本語では「タマネギ型の、大きな、伝統的な…」と、どの順番で並べても意味が通じます。しかし英語では、ネイティブの頭の中にある「形容詞をしまう引き出しの順番」に並べる必要があります。
+</div>
+<div class="exp-text" id="exp-1-2">
+🎯 <strong>【構造②：形容詞の並び替え（感想 ➔ サイズ ➔ 形状 ➔ ボス名詞）】</strong><br>
+英語のルールに合わせ、パーツがカチッと整列します！<br>
+<strong>【①遠くを指す言葉（That） ➔ ②主観的な感想（traditional） ➔ ③サイズ（big） ➔ ④形状（onion-shaped）】</strong>の順になり、ボス名詞（mosque）の直前をガチッとガードします。
+</div>
+<div class="exp-text" id="exp-1-3">
+🎯 <strong>【構造③：文節（動詞の前）に配置】</strong><br>
+きれいに整列した「長い主語の塊」が、文全体の主語として**動詞（is）の前**へドッキングします！後ろに「とても有名です」が合流し、英語の骨組みが完成します。
+</div>
+<div class="exp-text" id="exp-1-4">
+🎯 <strong>【構造④：英語の筆記（完成）】</strong><br>
+<span class="s">That traditional, big, onion-shaped mosque</span> <span class="v">is</span> <span class="m">very famous</span>.<br>
+教科書に出てきた `onion-shaped` や `mosque` が、正しい形容詞の並び順（形容詞句）でボス名詞を修飾している様子が分かりますね！
+</div>
+</div>
+</div>
+
+
+<div class="sim-card" id="card-2">
+<div class="card-title">例題②：動詞（〜した）を含む塊【形容詞節】のルール</div>
+<p style="font-size: 1rem; margin-bottom: 20px; color: var(--text-muted);">
+テーマ文：「5時に空港に到着した飛行機は、理子のものです。」
+</p>
+
+<div class="param-controller">
+<button class="step-btn active" id="btn-2-1" onclick="goStep(2, 1)">1. 日本語のならび</button>
+<button class="step-btn" id="btn-2-2" onclick="goStep(2, 2)">2. 長い主語の組み立て</button>
+<button class="step-btn" id="btn-2-3" onclick="goStep(2, 3)">3. 文節（動詞の前）に配置</button>
+<button class="step-btn" id="btn-2-4" onclick="goStep(2, 4)">4. 英語の筆記（完成）</button>
+</div>
+
+<div class="stage-field" id="field-2">
+<div class="row-label">【スタート】日本語の文法順（長い修飾語が前）</div>
+<div class="stage-row" id="row-origin-2"></div>
+
+<div style="margin-top: 15px; display:none;" class="row-label" id="label-middle-2">【脳内ステップ】長い主語の塊を作る（英語はボス名詞が先！飾りは後ろ！）</div>
+<div class="stage-row" id="row-middle-2" style="display:none; background: #f0f3f7; border-radius:10px; padding:5px 10px;"></div>
+
+<div style="margin-top: 25px;" class="row-label">【ゴール】英文法の配置エリア（主語節 ➔ 動詞 ➔ 所有代名詞）</div>
+<div class="stage-row" id="row-target-2"></div>
+</div>
+
+<div class="explanation-panel">
+<div class="exp-text active" id="exp-2-1">
+🎯 <strong>【構造①：日本語のならび】</strong><br>
+日本語では、「5時に空港に到着した」という動詞を含む長い塊が、ボス名詞（飛行機は）の<strong>前</strong>に置かれます。
+</div>
+<div class="exp-text" id="exp-2-2">
+🎯 <strong>【構造②：長い主語の組み立て（名詞が先、動詞の飾りは後ろ！）】</strong><br>
+英語は<strong>「結論を急ぐ言葉」</strong>です。脳内ではまず「飛行機だよ！（The flight）」とボス名詞を叫び、どんな飛行機なのかを表す動詞入りの塊（that arrived at the airport at 5 p.m.）を<strong>後ろからペタッと貼る</strong>塊を作ります。
+</div>
+<div class="exp-text" id="exp-2-3">
+🎯 <strong>【構造③：文節（動詞の前）に配置】</strong><br>
+後ろから修飾して巨大になった「長い主語の塊」を、全体の動詞（is）の前にドカンと配置します。これで「[5時に空港に着いた飛行機は] ➔ [〜です] ➔ [理子のもの]」という配置がロックされます。
+</div>
+<div class="exp-text" id="exp-2-4">
+🎯 <strong>【構造④：英語の筆記（完成）】</strong><br>
+<span class="s">The flight [that arrived at the airport at 5 p.m.]</span> <span class="v">is</span> <span class="m">Riko's</span>.<br>
+関係代名詞（that）を接着剤にして、教科書の新出単語 `flight` や `arrive`, `airport` を含む「形容詞節」が後ろから主語を説明する構造が完成しました！
+</div>
+</div>
+</div>
+
+</div>
+
+<script>
+// 🗺️ データ定義
+const DATA_1 = [
+    { id: 0, ja: "伝統的な、",  en: "traditional,", orderOri: 0, orderMid: 1, orderTar: 1 },
+    { id: 1, ja: "タマネギ型の",en: "onion-shaped", orderOri: 1, orderMid: 3, orderTar: 3 },
+    { id: 2, ja: "大きな、",    en: "big,",         orderOri: 2, orderMid: 2, orderTar: 2 },
+    { id: 3, ja: "あの",        en: "That",        orderOri: 3, orderMid: 0, orderTar: 0 },
+    { id: 4, ja: "モスクは、",  en: "mosque",       orderOri: 4, orderMid: 4, orderTar: 4 },
+    { id: 5, ja: "とても有名です。",en: "is very famous.",orderOri: 5, orderMid: -1, orderTar: 5 }
+];
+
+const DATA_2 = [
+    { id: 0, ja: "5時に",       en: "at 5 p.m.]",    orderOri: 0, orderMid: 3, orderTar: 3 },
+    { id: 1, ja: "空港に",       en: "at the airport",orderOri: 1, orderMid: 2, orderTar: 2 },
+    { id: 2, ja: "到着した",     en: "[that arrived", orderOri: 2, orderMid: 1, orderTar: 1 },
+    { id: 3, ja: "飛行機は、",   en: "The flight",    orderOri: 3, orderMid: 0, orderTar: 0 },
+    { id: 4, ja: "理子のものです。",en: "is Riko's.",   orderOri: 4, orderMid: -1, orderTar: 4 }
+];
+
+function initCard(cardNum, data) {
+    const originRow = document.getElementById(`row-origin-${cardNum}`);
+    const middleRow = document.getElementById(`row-middle-${cardNum}`);
+    const targetRow = document.getElementById(`row-target-${cardNum}`);
+    const field = document.getElementById(`field-${cardNum}`);
+
+    // スタート（日本語順）
+    [...data].sort((a,b)=>a.orderOri - b.orderOri).forEach(item => {
+        const slotO = document.createElement('div');
+        slotO.className = 'box-slot slot-origin';
+        slotO.innerText = item.ja;
+        slotO.id = `origin-${cardNum}-${item.id}`;
+        originRow.appendChild(slotO);
+
+        const ghost = document.createElement('div');
+        ghost.className = 'box-slot slot-ghost';
+        ghost.innerText = item.ja;
+        ghost.id = `ghost-${cardNum}-${item.id}`;
+        field.appendChild(ghost);
+    });
+
+    // 中間
+    [...data].filter(i => i.orderMid !== -1).sort((a,b)=>a.orderMid - b.orderMid).forEach(item => {
+        const slotM = document.createElement('div');
+        slotM.className = 'box-slot';
+        slotM.style.border = '2px dashed #a7b7cb';
+        slotM.style.color = 'transparent';
+        slotM.innerText = item.ja;
+        slotM.id = `middle-${cardNum}-${item.id}`;
+        middleRow.appendChild(slotM);
+    });
+
+    // ゴール（英語順）
+    [...data].sort((a,b)=>a.orderTar - b.orderTar).forEach(item => {
+        const slotT = document.createElement('div');
+        slotT.className = 'box-slot';
+        slotT.style.border = '2px dashed #cbd5e1';
+        slotT.style.color = 'transparent';
+        slotT.innerText = item.ja;
+        slotT.id = `target-${cardNum}-${item.id}`;
+        targetRow.appendChild(slotT);
+    });
+}
+
+function align(cardNum, step, data) {
+    const fieldRect = document.getElementById(`field-${cardNum}`).getBoundingClientRect();
+    const labelM = document.getElementById(`label-middle-${cardNum}`);
+    const rowM = document.getElementById(`row-middle-${cardNum}`);
+
+    if (step === 2) {
+        labelM.style.display = "block";
+        rowM.style.display = "flex";
+    } else {
+        labelM.style.display = "none";
+        rowM.style.display = "none";
+    }
+
+    data.forEach(item => {
+        const targetSlot = document.getElementById(`target-${cardNum}-${item.id}`);
+        if (targetSlot) {
+            targetSlot.innerText = (step === 4) ? item.en : item.ja;
+        }
+    });
+
+    data.forEach(item => {
+        const ghost = document.getElementById(`ghost-${cardNum}-${item.id}`);
+        if (!ghost) return;
+
+        let base;
+        if (step === 1) {
+            base = document.getElementById(`origin-${cardNum}-${item.id}`);
+            ghost.innerText = item.ja;
+        } 
+        else if (step === 2) {
+            base = (item.orderMid !== -1) ? document.getElementById(`middle-${cardNum}-${item.id}`) : document.getElementById(`origin-${cardNum}-${item.id}`);
+            ghost.innerText = item.ja;
+        } 
+        else if (step === 3 || step === 4) {
+            base = document.getElementById(`target-${cardNum}-${item.id}`);
+            if (step === 4) {
+                if (cardNum === 1) {
+                    if (item.en.includes("is")) ghost.innerHTML = `<span class="v">${item.en}</span>`;
+                    else if (item.en.includes("famous")) ghost.innerHTML = `<span class="m">${item.en}</span>`;
+                    else ghost.innerHTML = `<span class="s">${item.en}</span>`;
+                } else {
+                    if (item.id === 4) ghost.innerHTML = `<span class="v">${item.en}</span>`;
+                    else if (item.id === 3 || item.id === 2 || item.id === 1 || item.id === 0) ghost.innerHTML = `<span class="s">${item.en}</span>`;
+                }
+            } else {
+                ghost.innerText = item.ja;
+            }
+        }
+
+        if (base) {
+            const rect = base.getBoundingClientRect();
+            ghost.style.top = `${rect.top - fieldRect.top}px`;
+            ghost.style.left = `${rect.left - fieldRect.left}px`;
+            ghost.style.width = `${rect.width}px`; 
+            ghost.style.height = `${rect.height}px`;
+        }
+    });
+}
+
+function goStep(cardNum, stepNum) {
+    const data = (cardNum === 1) ? DATA_1 : DATA_2;
+    for (let i = 1; i <= 4; i++) {
+        document.getElementById(`btn-${cardNum}-${i}`).classList.toggle('active', i === stepNum);
+    }
+    
+    // 解説テキストの切り替え
+    const card = document.getElementById(`card-${cardNum}`);
+    const exps = card.querySelectorAll('.exp-text');
+    exps.forEach((exp, idx) => {
+        exp.classList.toggle('active', (idx + 1) === stepNum);
+    });
+
+    align(cardNum, stepNum, data);
+}
+
+window.onload = function() {
+    initCard(1, DATA_1);
+    initCard(2, DATA_2);
+    setTimeout(() => { align(1, 1, DATA_1); align(2, 1, DATA_2); }, 200);
+};
+
+window.addEventListener('resize', () => {
+    align(1, getCurrentStep(1), DATA_1);
+    align(2, getCurrentStep(2), DATA_2);
+});
+
+function getCurrentStep(cardNum) {
+    const btns = document.getElementById(`card-${cardNum}`).querySelectorAll('.step-btn');
+    for(let i=0; i<btns.length; i++) {
+        if(btns[i].classList.contains('active')) return (i+1);
+    }
+    return 1;
+}
+</script>
+</body>
+</html>
