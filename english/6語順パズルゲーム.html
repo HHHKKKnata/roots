@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英語のひみつ基地：5文型パズルマスター</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+
+:root {
+    --bg-color: #f0f4f8;
+    --card-bg: #ffffff;
+    --primary: #5c83b4;
+    --primary-light: #e6f0fa;
+    --accent-success: #4caf50;
+    --accent-error: #e57373;
+    --text-main: #333a42;
+    --border: #cfe2fe;
+}
+
+body {
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden;
+}
+
+.game-container {
+    max-width: 800px;
+    width: 100%;
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 24px;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.05);
+    box-sizing: border-box;
+    position: relative;
+}
+
+header {
+    text-align: center;
+    border-bottom: 4px dashed var(--primary);
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+header h1 { font-size: 1.6rem; font-weight: 900; color: var(--primary); margin: 0; }
+header p { font-size: 0.9rem; color: #666; margin: 5px 0 0 0; font-weight: bold; }
+
+/* タブメニュー */
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    flex: 1;
+    min-width: 100px;
+    background: #e2e8f0;
+    color: #4a5568;
+    border: none;
+    padding: 12px 8px;
+    font-family: inherit;
+    font-weight: 900;
+    font-size: 0.95rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.tab-btn.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 10px rgba(92,131,180,0.3);
+}
+
+/* クイズステージ */
+.quiz-stage {
+    background: #f7fafc;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.question-meta {
+    font-size: 0.85rem;
+    color: var(--primary);
+    font-weight: 900;
+    margin-bottom: 5px;
+}
+
+.jp-question {
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin-bottom: 25px;
+    border-left: 5px solid var(--primary);
+    padding-left: 12px;
+}
+
+/* 解答ハコエリア */
+.answer-zone {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-height: 55px;
+    background: #edf2f7;
+    border: 2px dashed #cbd5e0;
+    border-radius: 14px;
+    padding: 10px;
+    margin-bottom: 25px;
+    align-items: center;
+}
+
+/* 単語プール */
+.word-pool {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-height: 55px;
+    padding: 10px;
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    margin-bottom: 25px;
+    justify-content: center;
+}
+
+/* 単語ブロックの共通スタイル */
+.word-block {
+    padding: 10px 18px;
+    background: white;
+    border: 2px solid #cbd5e1;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    font-size: 1rem;
+}
+
+.word-block:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    background: var(--primary-light);
+}
+
+.answer-zone .word-block {
+    background: #fff;
+    border-color: var(--primary);
+}
+
+/* コントロールボタン */
+.control-panel {
+    display: flex;
+    gap: 15px;
+}
+
+.btn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 900;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn-clear { background: #cbd5e1; color: #4a5568; }
+.btn-clear:hover { background: #94a3b8; }
+.btn-check { background: var(--primary); color: white; }
+.btn-check:hover { background: #4a6fa5; }
+
+/* --- アニメーションエフェクト --- */
+
+/* 正解時のコンテナ跳ね */
+.success-bounce {
+    animation: successBounce 0.6s ease;
+    border-color: var(--accent-success) !important;
+}
+@keyframes successBounce {
+    0%, 100% { transform: scale(1); }
+    30% { transform: scale(1.02); }
+    50% { transform: scale(0.98); }
+}
+
+/* 不正解時のハコククラッシュ（振動と砕け落ち） */
+.shatter-shake {
+    animation: shatterShake 0.4s linear;
+}
+@keyframes shatterShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+
+.word-shatter {
+    animation: wordShatter 0.5s ease-in forwards !important;
+    border-color: var(--accent-error) !important;
+    background-color: var(--accent-light) !important;
+}
+@keyframes wordShatter {
+    0% { transform: scale(1) rotate(0deg); opacity: 1; }
+    50% { transform: translateY(15px) rotate(10deg); opacity: 0.7; }
+    100% { transform: translateY(50px) rotate(25deg); opacity: 0; }
+}
+
+/* パーティクル(星) */
+.particle {
+    position: absolute;
+    pointer-events: none;
+    font-size: 24px;
+    animation: particleAnim 0.8s ease-out forwards;
+    z-index: 999;
+}
+@keyframes particleAnim {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--mx), var(--my)) scale(0); opacity: 0; }
+}
+
+.commentary {
+    margin-top: 15px;
+    background: #e6f4ff;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    border-left: 5px solid #1565c0;
+    display: none;
+}
+</style>
+</head>
+<body>
+
+<div class="game-container" id="gameContainer">
+    <header>
+        <h1>🕵️‍♂️ 英語のひみつ基地：語順パズルゲーム</h1>
+        <p>〜「ハコの型」を意識して、言葉を正しい順番にハメ込もう！〜</p>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('sv')">① SV型<br>(5問)</button>
+        <button class="tab-btn" onclick="switchTab('svc')">② SVC型<br>(2問)</button>
+        <button class="tab-btn" onclick="switchTab('svo')">③ SVO型<br>(4問)</button>
+        <button class="tab-btn" onclick="switchTab('svoo')">④ SVOO型<br>(10問)</button>
+        <button class="tab-btn" onclick="switchTab('svoc')">⑤ SVOC型<br>(10問)</button>
+    </div>
+
+    <div class="quiz-stage">
+        <div class="question-meta" id="qMeta">第 1 / 5 問</div>
+        <div class="jp-question" id="qJp">日本語の問題文がここに入ります</div>
+
+        <div class="answer-zone" id="answerZone"></div>
+
+        <div class="word-pool" id="wordPool"></div>
+        
+        <div class="commentary" id="commentaryPanel"></div>
+    </div>
+
+    <div class="control-panel">
+        <button class="btn btn-clear" onclick="clearAnswer()">リセット</button>
+        <button class="btn btn-check" id="actionBtn" onclick="checkAnswer()">決定する！</button>
+    </div>
+</div>
+
+<script>
+// --- 全29問のクイズデータ ---
+const quizData = {
+    sv: [
+        { jp: "太陽が輝いている。", ans: ["The", "sun", "shines."], pool: ["The", "sun", "shines."], type: "SV" },
+        { jp: "多くの人々が笑った。", ans: ["Many", "people", "laughed."], pool: ["laughed.", "people", "Many"], type: "SV" },
+        { jp: "私は東京に住んでいます。", ans: ["I", "live", "in", "Tokyo."], pool: ["I", "Tokyo.", "live", "in"], type: "SV+M", note: "怪獣の罠を回避！自動詞liveの後ろにin(磁石)を接着させて場所のM(修飾語)を作ります。" },
+        { jp: "その鳥は空を飛んだ。", ans: ["The", "bird", "flew", "in", "the", "sky."], pool: ["flew", "the", "bird", "sky.", "The", "in"], type: "SV+M" },
+        { jp: "私たちはその駅に時間通りに到着した。", ans: ["We", "arrived", "at", "the", "station", "on", "time."], pool: ["station", "time.", "at", "We", "the", "arrived", "on"], type: "SV+M" }
+    ],
+    svc: [
+        { jp: "彼女は先生です。", ans: ["She", "is", "a", "teacher."], pool: ["teacher.", "a", "is", "She"], type: "SVC", note: "彼女 ＝ 先生（S ＝ C）の関係が成り立つ補語(C)の基本ハコ型です。" },
+        { jp: "彼は幸せそうに見える。", ans: ["He", "looks", "happy."], pool: ["looks", "happy.", "He"], type: "SVC", note: "彼 ＝ 幸せな状態（S ＝ C）。looksは「〜に見える」というイコール系の動詞です。" }
+    ],
+    svo: [
+        { jp: "私は椅子を修理した。", ans: ["I", "mended", "the", "chair."], pool: ["mended", "chair.", "the", "I"], type: "SVO", note: "私 ≠ 椅子（S ≠ O）。他動詞mendedが直接ターゲットの「椅子」を掴み取ります。" },
+        { jp: "彼は疲れていたので、早く寝た。", ans: ["He", "went", "to", "bed", "early", "because", "he", "was", "tired."], pool: ["tired.", "because", "went", "bed", "He", "he", "early", "was", "to"], type: "SVO+because+SVO" },
+        { jp: "彼女は英語が大好きなので毎日勉強する。", ans: ["She", "studies", "English", "every", "day", "because", "she", "loves", "it."], pool: ["day", "loves", "studies", "every", "English", "it.", "because", "She", "she"], type: "SVO+because+SVO" },
+        { jp: "私は彼がその試験に合格すると信じている。", ans: ["I", "believe", "that", "he", "will", "pass", "the", "exam."], pool: ["exam.", "pass", "believe", "will", "that", "the", "he", "I"], type: "SVO+that" }
+    ],
+    svoo: [
+        { jp: "私は理子にプレゼントを与えた。", ans: ["I", "gave", "Riko", "a", "gift."], pool: ["a", "Riko", "gift.", "I", "gave"], type: "SVOO", note: "[人]＋[物]のハコ。理子≠プレゼントなので名詞が並ぶ第4文型です。" },
+        { jp: "彼女は私にメールを送った（メールを強調）。", ans: ["She", "sent", "me", "the", "email."], pool: ["the", "me", "email.", "sent", "She"], type: "SVOO", note: "最後に言った「the email」に心のスポットライトが当たり、耳に残ります。" },
+        { jp: "彼女はあなたにメールを送った（あなたを強調）。", ans: ["She", "sent", "the", "email", "to", "you."], pool: ["email", "you.", "sent", "to", "the", "She"], type: "SVOO→SVO+M", note: "矢印(to)を使うことで、最後に置いた「you」へスポットライトを移します！" },
+        { jp: "私は以前から予定していたので、理子にプレゼントをあげるつもりです。", ans: ["I", "am", "going", "to", "give", "Riko", "a", "gift."], pool: ["Riko", "give", "going", "am", "gift.", "to", "a", "I"], type: "SVOO (未来予定)", note: "be going toで動詞のカタチ(V)が長くなっても、後ろのハコ型(O+O)はキープされます。" },
+        { jp: "私の父は私に新しい自転車を買ってくれた。", ans: ["My", "father", "bought", "me", "a", "new", "bike."], pool: ["a", "bought", "bike.", "me", "new", "My", "father"], type: "SVOO" },
+        { jp: "彼女は私たちに彼女の家への道を教えてくれた。", ans: ["She", "showed", "us", "the", "way", "to", "her", "house."], pool: ["to", "way", "house.", "us", "her", "She", "the", "showed"], type: "SVOO" },
+        { jp: "彼が私にその秘密のコードを教えたので、私は真実を知っている。", ans: ["Because", "he", "told", "me", "the", "secret", "code,", "I", "know", "the", "truth."], pool: ["I", "me", "the", "truth.", "Because", "code,", "know", "the", "he", "secret", "told"], type: "2文構成SVOO" },
+        { jp: "私に英語を教えてくれるその先生は、親切です。", ans: ["The", "teacher", "who", "teaches", "me", "English", "is", "kind."], pool: ["is", "me", "teacher", "who", "kind.", "English", "The", "teaches"], type: "関係代名詞含むSVOO" },
+        { jp: "あなたが私に貸してくれた本はとても面白い。", ans: ["The", "book", "that", "you", "lent", "me", "is", "very", "interesting."], pool: ["lent", "is", "book", "interesting.", "you", "that", "very", "The", "me"], type: "関係代名詞含むSVOO" },
+        { jp: "もし彼が私にアドバイスをくれたら、私は成功するだろう。", ans: ["If", "he", "gives", "me", "some", "advice,", "I", "will", "succeed."], pool: ["gives", "will", "some", "advice,", "If", "me", "I", "succeed.", "he"], type: "2文構成SVOO" }
+    ],
+    svoc: [
+        { jp: "人々はこの地域をリトル・インディアと呼ぶ。", ans: ["People", "call", "this", "area", "Little", "India."], pool: ["Little", "area", "People", "India.", "call", "this"], type: "SVOC", note: "この地域 ＝ リトル・インディア（O ＝ C）のイコール天秤がピタッと成り立ちます。" },
+        { jp: "人々はこの地域をリトル・インディアと呼んだ（過去形）。", ans: ["People", "called", "this", "area", "Little", "India."], pool: ["called", "this", "India.", "People", "Little", "area"], type: "SVOC", note: "過去形になっても、後ろの言葉のイコール関係（O＝C）はビクともしません。" },
+        { jp: "この地域はリトル・インディアと呼ばれている。", ans: ["This", "area", "is", "called", "Little", "India."], pool: ["called", "is", "area", "This", "Little", "India."], type: "受動態(SVC大進化)", note: "教材より：受動態になり骨組みは第2文型(SVC)へ進化！[This area] ＝ [called Little Indiaの状態]" },
+        { jp: "その知らせは私を幸せにした。", ans: ["The", "news", "made", "me", "happy."], pool: ["happy.", "made", "me", "The", "news"], type: "SVOC", note: "私 ＝ 幸せな状態（O ＝ C）を、動詞madeが引き起こします。" },
+        { jp: "私たちは彼をキャプテンに選んだ。", ans: ["We", "elected", "him", "captain."], pool: ["him", "elected", "captain.", "We"], type: "SVOC" },
+        { jp: "私はいつも部屋を綺麗に保っている。", ans: ["I", "always", "keep", "my", "room", "clean."], pool: ["room", "clean.", "always", "my", "I", "keep"], type: "SVOC" },
+        { jp: "シンガポールに住む多くの人々によって、この地域はリトル・インディアと呼ばれている。", ans: ["This", "area", "is", "called", "Little", "India", "by", "many", "people", "who", "live", "in", "Singapore."], pool: ["Singapore.", "called", "by", "who", "is", "India", "people", "This", "many", "live", "Little", "in", "area"], type: "受動態+関係代名詞", note: "教材の最難関フレーズ！who live in Singaporeの飾り(M)の中にさらに小さな第1文型(SV)が隠れています。" },
+        { jp: "彼女は彼を怒らせたので、彼は部屋を出て行った。", ans: ["Because", "she", "made", "him", "angry,", "he", "left", "the", "room."], pool: ["room.", "he", "angry,", "the", "made", "Because", "she", "him", "left"], type: "2文構成SVOC" },
+        { jp: "私がその部屋を暖かく保っていたので、赤ちゃんはよく眠った。", ans: ["Because", "I", "kept", "the", "room", "warm,", "the", "baby", "slept", "well."], pool: ["baby", "kept", "room", "the", "warm,", "I", "slept", "the", "well.", "Because"], type: "2文構成SVOC" },
+        { jp: "私たちは、彼らがその犬をポチと呼んでいることを知っている。", ans: ["We", "know", "that", "they", "call", "the", "dog", "Pochi."], pool: ["dog", "know", "Pochi.", "they", "that", "the", "call", "We"], type: "that節内がSVOC" }
+    ]
+};
+
+// --- ゲーム状態管理 ---
+let currentTab = 'sv';
+let currentQuestionIdx = 0;
+let userSelection = [];
+let isStateScattered = false; // 不正解でパズルが砕けている状態か
+
+// Web Audio API によるサウンド生成（外部ファイル不要）
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === 'success') {
+        // ピコーン！という快音
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+    } else if (type === 'fail') {
+        // バキッ！という破裂・濁音
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+    }
+}
+
+// タブ切り替え
+function switchTab(tabKey) {
+    currentTab = tabKey;
+    currentQuestionIdx = 0;
+    // タブボタンの見た目更新
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    loadQuestion();
+}
+
+// 質問の読み込み
+function loadQuestion() {
+    isStateScattered = false;
+    const currentList = quizData[currentTab];
+    const q = currentList[currentQuestionIdx];
+    
+    // メタ情報と日本語
+    document.getElementById('qMeta').innerText = `${currentTab.toUpperCase()}型：第 ${currentQuestionIdx + 1} / ${currentList.length} 問`;
+    document.getElementById('qJp').innerText = q.jp;
+    
+    // パネルの初期化
+    document.getElementById('commentaryPanel').style.display = 'none';
+    document.getElementById('actionBtn').innerText = "決定する！";
+    document.getElementById('actionBtn').onclick = checkAnswer;
+
+    userSelection = [];
+    renderAnswerZone();
+    
+    // シャッフルした選択肢プールを作成
+    const shuffledPool = [...q.pool].sort(() => Math.random() - 0.5);
+    renderWordPool(shuffledPool);
+}
+
+// 解答ハコの描画
+function renderAnswerZone() {
+    const zone = document.getElementById('answerZone');
+    zone.innerHTML = '';
+    userSelection.forEach((word, idx) => {
+        const block = document.createElement('div');
+        block.className = 'word-block';
+        block.innerText = word;
+        block.onclick = () => removeWord(idx);
+        zone.appendChild(block);
+    });
+}
+
+// 単語プールの描画
+function renderWordPool(words) {
+    const pool = document.getElementById('wordPool');
+    pool.innerHTML = '';
+    words.forEach(word => {
+        const block = document.createElement('div');
+        block.className = 'word-block';
+        block.innerText = word;
+        block.onclick = () => selectWord(word, block);
+        pool.appendChild(block);
+    });
+}
+
+// 単語を選択したとき
+function selectWord(word, blockElement) {
+    if (isStateScattered) return; // 砕け散り中は操作不可
+    userSelection.push(word);
+    renderAnswerZone();
+    blockElement.remove(); // プールから消す
+}
+
+// 解答ハコから単語を戻すとき
+function removeWord(index) {
+    if (isStateScattered) return;
+    const word = userSelection[index];
+    userSelection.splice(index, 1);
+    renderAnswerZone();
+    
+    // プールに戻す
+    const block = document.createElement('div');
+    block.className = 'word-block';
+    block.innerText = word;
+    block.onclick = () => selectWord(word, block);
+    document.getElementById('wordPool').appendChild(block);
+}
+
+// クリア・リセット
+function clearAnswer() {
+    loadQuestion();
+}
+
+// 判定処理
+function checkAnswer() {
+    const q = quizData[currentTab][currentQuestionIdx];
+    const userStr = userSelection.join(' ');
+    const ansStr = q.ans.join(' ');
+    
+    const zone = document.getElementById('answerZone');
+    const container = document.getElementById('gameContainer');
+
+    if (userStr === ansStr) {
+        // --- 【正解エフェクト】 ---
+        playSound('success');
+        zone.classList.add('success-bounce');
+        createParticles(); // 星を降らせる
+        
+        // 解説の表示
+        const comm = document.getElementById('commentaryPanel');
+        comm.innerHTML = `<strong>✨ 正解！ [${q.type}]</strong><br>${q.note || "素晴らしい語順感覚です！その調子でハコの型をマスターしましょう。"}`;
+        comm.style.display = 'block';
+
+        // ボタンの切り替え
+        const nextBtn = document.getElementById('actionBtn');
+        const isLast = currentQuestionIdx === quizData[currentTab].length - 1;
+        nextBtn.innerText = isLast ? "この文型をクリア！" : "次の問題へ ➔";
+        nextBtn.onclick = nextQuestion;
+        
+        setTimeout(() => zone.classList.remove('success-bounce'), 600);
+    } else {
+        // --- 【不正解エフェクト】 ---
+        playSound('fail');
+        zone.classList.add('shatter-shake');
+        isStateScattered = true;
+
+        // ハコの中の全単語ブロックに「砕け散りアニメーション」を適用
+        const blocks = zone.querySelectorAll('.word-block');
+        blocks.forEach(b => b.classList.add('word-shatter'));
+
+        // 振動のクリーンアップと自動リセット
+        setTimeout(() => {
+            zone.classList.remove('shatter-shake');
+            // パズルが砕けた後、自動でリセットして選択を戻す
+            loadQuestion();
+        }, 600);
+    }
+}
+
+// 次の問題へ
+function nextQuestion() {
+    currentQuestionIdx++;
+    if (currentQuestionIdx >= quizData[currentTab].length) {
+        alert(`${currentTab.toUpperCase()}型の全問題が終了しました！他のタブも挑戦してみよう！`);
+        currentQuestionIdx = 0;
+    }
+    loadQuestion();
+}
+
+// 演出：星パーティクルの生成
+function createParticles() {
+    const container = document.getElementById('gameContainer');
+    for (let i = 0; i < 15; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.innerText = ['⭐', '✨', '🥇', '🎉'][Math.floor(Math.random() * 4)];
+        
+        // ランダムな飛び散り方向
+        const mx = (Math.random() - 0.5) * 300 + 'px';
+        const my = (Math.random() - 0.5) * 300 - 100 + 'px';
+        p.style.setProperty('--mx', mx);
+        p.style.setProperty('--my', my);
+        
+        // 出現位置を中央付近に
+        p.style.left = '50%';
+        p.style.top = '40%';
+        
+        container.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+    }
+}
+
+// 初回起動
+window.onload = () => {
+    loadQuestion();
+};
+</script>
+
+</body>
+</html>
