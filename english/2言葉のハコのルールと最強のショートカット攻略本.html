@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英語のひみつ基地：ハコのルールと最強の攻略本</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+
+:root {
+    --bg-color: #f0f4f8;
+    --card-bg: #ffffff;
+    --text-main: #333a42;
+    --primary: #5c83b4;       /* スカイブルー */
+    --primary-light: #e6f0fa;
+    --accent: #e57373;        /* スポットライト赤 */
+    --accent-light: #ffebee;
+    --gold: #fbc02d;          /* 攻略本ゴールド */
+    --border: #cfe2fe;
+}
+
+body {
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.8;
+    padding: 30px 15px;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 24px;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.05);
+    box-sizing: border-box;
+}
+
+header {
+    text-align: center;
+    border-bottom: 4px dashed var(--primary);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+}
+
+h1 { font-size: 1.6rem; font-weight: 900; color: var(--primary); margin: 0 0 10px 0; }
+.intro { font-size: 0.95rem; color: #666; font-weight: bold; }
+
+h2 {
+    font-size: 1.3rem;
+    background: var(--primary-light);
+    color: #2c5282;
+    padding: 10px 15px;
+    border-radius: 12px;
+    margin-top: 40px;
+    font-weight: 900;
+    border-left: 6px solid var(--primary);
+}
+
+h3 {
+    font-size: 1.1rem;
+    color: var(--primary);
+    margin-top: 25px;
+    margin-bottom: 10px;
+    font-weight: 900;
+}
+
+p { margin: 0 0 15px 0; font-size: 1rem; }
+.bold { font-weight: bold; color: #1a202c; }
+
+/* 🕹️ アニメーションステージの共通スタイル */
+.stage {
+    background: #f7fafc;
+    border: 2px dashed #cbd5e0;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 0;
+    position: relative;
+    min-height: 80px;
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    position: relative;
+    min-height: 50px;
+}
+
+/* 言葉のブロック */
+.block {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    background: white;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 文型ラベル */
+.label-s { border-color: #ffb7b2; background: #fff0ef; color: #c62828; }
+.label-v { border-color: #9cd3ff; background: #e6f4ff; color: #1565c0; }
+.label-o { border-color: #baffc9; background: #ebfaef; color: #2e7d32; }
+.label-c { border-color: #e8baff; background: #f9f0ff; color: #6a1b9a; }
+.label-m { border-color: #cbd5e1; background: #f8fafc; color: #64748b; font-size: 0.85rem; }
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+button:hover { background: #4a6fa5; }
+button.active { background: #2b4c7e; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+
+/* スポットライト効果 */
+.spotlight {
+    border-color: var(--accent) !important;
+    background: var(--accent-light) !important;
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(229, 115, 115, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(229, 115, 115, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(229, 115, 115, 0); }
+}
+
+/* イコール天秤のスタイル */
+.eq-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+.eq-sign {
+    font-size: 2rem;
+    color: #cbd5e0;
+    transition: color 0.5s, transform 0.5s;
+}
+.eq-active { color: var(--accent); transform: scale(1.3); }
+.neq-active { color: #4a5568; transform: rotate(15deg); }
+
+/* 🌟 攻略本セクション */
+.book-box {
+    background: #2d3748;
+    color: #edf2f7;
+    padding: 25px;
+    border-radius: 16px;
+    border: 3px solid var(--gold);
+    position: relative;
+    overflow: hidden;
+}
+.secret-code {
+    background: #1a202c;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: monospace;
+    color: #a3e635;
+    font-size: 1.1rem;
+    margin-top: 15px;
+    opacity: 0.1;
+    filter: blur(4px);
+    transition: all 1s ease;
+}
+.book-box.revealed .secret-code {
+    opacity: 1;
+    filter: blur(0);
+    box-shadow: 0 0 15px rgba(163, 230, 53, 0.4);
+}
+
+.character-say {
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 15px 0;
+    border-left: 5px solid #cbd5e1;
+    font-size: 0.95rem;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🕵️‍♂️ 英語のひみつ基地</h1>
+        <div class="intro">〜言葉のハコのルールと、最強のショートカット攻略本〜</div>
+    </header>
+
+    <!-- セクション1 -->
+    <section>
+        <h2>1. 英語は「最後に言った言葉」が一番耳に残る！</h2>
+        <p>英語にはおもしろいルールがあります。それは、<span class="bold highlight">「一番最後に言った大切な言葉が、相手の耳に一番強く残る（強調される）」</span>ということ！</p>
+        <p>下のボタンを押して、言葉に当たる「心のスポットライト」がどう変わるか見てみよう！</p>
+        
+        <div class="btn-group">
+            <button id="btn1-1" class="active" onclick="changeLight(1)">① メールを強調したいとき</button>
+            <button id="btn1-2" onclick="changeLight(2)">② あなたを強調したいとき</button>
+        </div>
+
+        <div class="stage" id="stage1">
+            <div class="row" id="row1">
+                <!-- JSで動的に並び替えます -->
+            </div>
+        </div>
+
+        <div class="character-say" id="text1">
+            💬 <strong>ひみつ解説：</strong>「the email（メール）」が一番最後にあるから、相手の耳には「あなたに【メールを】送ったんだよ（他のものじゃなくて）」という気持ちが強く伝わるよ！
+        </div>
+    </section>
+
+    <!-- セクション2 -->
+    <section>
+        <h2>2. 「＝（イコール）」で見破るハコの変身と大進化</h2>
+        <p>動詞の後ろに言葉が並ぶとき、英語には大切なハコ（文型）の決まりがあります。時制（現在・過去・未来）が変わったり、文がどれだけ長くなっても、**言葉の主軸にあるイコールの関係**を見つければ、正体がはっきりと見破れるよ！</p>
+        
+        <h3>📊 文型パズル天秤シミュレーター</h3>
+        <p>ボタンを押して、色々なパターンの文を天秤にかけてみよう！</p>
+
+        <div class="btn-group">
+            <button id="btn2-1" class="active" onclick="checkEqual(1)">① give (現在)</button>
+            <button id="btn2-2" onclick="checkEqual(2)">② be going to give (未来予定)</button>
+            <button id="btn2-3" onclick="checkEqual(3)">③ call (現在・第5文型)</button>
+            <button id="btn2-4" onclick="checkEqual(4)">④ called (過去・第5文型)</button>
+            <button id="btn2-5" onclick="checkEqual(5)">⑤ is called (受動態・超進化)</button>
+        </div>
+
+        <div class="stage">
+            <div class="eq-container" id="puzzle-stage">
+                <!-- JSで動的にハコが出現 -->
+            </div>
+            <div class="eq-container" style="margin-top: 15px; border-top: 1px dashed #cbd5e0; padding-top: 15px;">
+                <div class="block" id="eq-left">Riko</div>
+                <div class="eq-sign" id="eq-sign">≠</div>
+                <div class="block" id="eq-right">a gift</div>
+            </div>
+        </div>
+
+        <div class="character-say" id="text2">
+            💬 <strong>ひみつ解説：</strong>[理子] と [プレゼント] は同じもの（イコール）じゃないよね。だからこれは名詞が2つ並ぶ<strong>第4文型（SVOO）</strong>！ここではsend（郵送）じゃなく、直接贈るイメージの「give」を使っているよ。
+        </div>
+    </section>
+
+    <!-- セクション3 -->
+    <section>
+        <h2>3. 辞書引きは、時間をショートカットする「最強の攻略本」</h2>
+        <p>アメリカやイギリスの子供たちは、どの動詞がどんなハコ（文型）を作れるのかを、何年もかけて毎日何万回も英語を聴きまくって、やっと体で覚えます（ものすごい手数！）。</p>
+        <p>でも、日本に住む僕たちにはそんな時間はありません。そこで使える裏ワザが、<span class="bold">「辞書を引く（攻略本をカンニングする）」</span>という行為です！</p>
+        
+        <div class="book-box" id="bookBox">
+            <p>🎒 <strong>動詞の取扱説明書（辞書）</strong></p>
+            <p>辞書をパッと引だけで、ネイティブが何年もかけて覚えた「ひみつの型」がたった3秒で手に入ります。ボタンを押して、攻略本のページを開いてみよう！</p>
+            <button onclick="revealSecret()">📖 辞書（攻略本）を開く！</button>
+            
+            <div class="secret-code" id="secretCode">
+                【★giveのチートコード型】<br>
+                ➔ give ＋ [ 人 ] ＋ [ 物 ] （人に物を与えるハコが作れるよ！）
+            </div>
+        </div>
+
+        <p style="margin-top:20px;">
+            英語のハコ（文型）の形は、はじめから動詞ごとに決まっています。辞書を引くのは、面倒な勉強ではなく、**時間を一気にショートカットしてネイティブの頭脳をハッキングする一番かしこい方法（コスパ最強の勉強）**なんだよ！
+        </p>
+    </section>
+</div>
+
+<script>
+// --- セクション1のデータと制御 ---
+function changeLight(type) {
+    const row = document.getElementById("row1");
+    const text = document.getElementById("text1");
+    document.getElementById("btn1-1").classList.toggle("active", type === 1);
+    document.getElementById("btn1-2").classList.toggle("active", type === 2);
+    
+    row.innerHTML = "";
+    
+    if (type === 1) {
+        const order = ["I", "sent", "you", "the email"];
+        order.forEach((w, i) => {
+            const b = document.createElement("div");
+            b.className = "block" + (i === 3 ? " spotlight" : "");
+            b.innerText = w;
+            row.appendChild(b);
+        });
+        text.innerHTML = `💬 <strong>ひみつ解説：</strong>「the email（メール）」が一番最後にあるから、相手の耳には『あなたに【メールを】送ったんだよ（他のものじゃなくて）』という気持ちが強く伝わるよ！`;
+    } else {
+        const order = ["I", "sent", "the email", "to you"];
+        order.forEach((w, i) => {
+            const b = document.createElement("div");
+            b.className = "block" + (i === 3 ? " spotlight" : "");
+            b.innerText = w;
+            row.appendChild(b);
+        });
+        text.innerHTML = `💬 <strong>ひみつ解説：</strong>最後に「to you（あなたに）」が来たね！スーパー助っ人の<strong>矢印（to）</strong>を使うことで文の形を守りつつ、『他のみんなじゃなく【あなたに】送ったんだよ！』とスポットライトを当てられるんだ！`;
+    }
+}
+
+// --- セクション2の制御 ---
+const puzzleData = {
+    1: {
+        blocks: [
+            { text: "I", label: "S" }, { text: "give", label: "V" }, 
+            { text: "Riko", label: "O" }, { text: "a gift", label: "O" }
+        ],
+        left: "Riko (理子)", right: "a gift (プレゼント)", sign: "≠", eqClass: "neq-active",
+        desc: `💬 <strong>ひみつ解説：</strong>[理子] と [プレゼント] は同じもの（イコール）じゃないよね。こういう「〜に、◯◯を」と並べるのが<strong>第4文型（SVOO）</strong>だよ。ここではsend（郵送など）ではなく、贈る意味で「give」が使われているね。`
+    },
+    2: {
+        blocks: [
+            { text: "I", label: "S" }, { text: "'m going to give", label: "V" }, 
+            { text: "Riko", label: "O" }, { text: "a gift", label: "O" }
+        ],
+        left: "Riko (理子)", right: "a gift (プレゼント)", sign: "≠", eqClass: "neq-active",
+        desc: `💬 <strong>ひみつ解説：</strong>直近のレッスンで登場した、以前から予定していることを表す「be going to」に言い換えたよ！動詞のカタチ（V）が長くなっても、後ろのハコの並び（O ＋ O）は綺麗にキープされていて、<strong>第4文型（SVOO）</strong>のままだね！`
+    },
+    3: {
+        blocks: [
+            { text: "People", label: "S" }, { text: "call", label: "V" }, 
+            { text: "this area", label: "O" }, { text: "Little India", label: "C" }
+        ],
+        left: "this area (この地域)", right: "Little India (リトル・インディア)", sign: "＝", eqClass: "eq-active",
+        desc: `💬 <strong>ひみつ解説：</strong>今度は [この地域] ＝ [リトル・インディア] という<strong>イコールの関係がピタッと成り立つ</strong>よね！この、後ろからOの正体を『補う』ハコ（C）を連れた形が、みんなが習っている<strong>第5文型（SVOC）</strong>の正体だよ！`
+    },
+    4: {
+        blocks: [
+            { text: "People", label: "S" }, { text: "called", label: "V" }, 
+            { text: "this area", label: "O" }, { text: "Little India", label: "C" }
+        ],
+        left: "this area (この地域)", right: "Little India (リトル・インディア)", sign: "＝", eqClass: "eq-active",
+        desc: `💬 <strong>ひみつ解説：</strong>動詞が過去形の「called（呼んだ）」に変身したよ！でも驚くなかれ、過去形になって時制が変わっても、後ろの言葉のイコール関係（O＝C）はビクともしない。つまり、形が変わっても<strong>第5文型（SVOC）</strong>のままだよ！`
+    },
+    5: {
+        blocks: [
+            { text: "This area", label: "S" }, { text: "is called", label: "V" }, 
+            { text: "Little India", label: "C" }, { text: "by many people who live in Singapore", label: "M" }
+        ],
+        left: "This area (この地域)", right: "Little India (リトル・インディア)", sign: "＝", eqClass: "eq-active",
+        desc: `💬 <strong>ひみつ解説【超重要】：</strong>教科書の「I was surprised」と同じ受動態（〜される）を使って、「この地域」を主語（S）に大・変・身させた文だよ！<br>
+        主語だったものが前に出たことで、この文は<strong>第2文型（S ＋ V ＋ C）</strong>へと変化しているんだ！でもやっぱり「この地域（S）＝ リトル・インディア（C）」のイコール関係（天秤）は健在だね！<br>
+        そして、後ろにくっついている長〜い「by many people who live in Singapore」は、関係代名詞 who（liveにsはつかないよ！）で豪華に修飾されているけれど、文法的にはただの飾り。専門用語で<strong>「前置詞句（ぜんちしく）」</strong>と呼ばれる1つの大きなパーツなんだ。どんなに文が長くなっても、骨組みはすっきりシンプルだね！`
+    }
+};
+
+function checkEqual(pattern) {
+    const pStage = document.getElementById("puzzle-stage");
+    const left = document.getElementById("eq-left");
+    const right = document.getElementById("eq-right");
+    const sign = document.getElementById("eq-sign");
+    const text = document.getElementById("text2");
+    
+    // ボタンのアクティブ切り替え
+    for (let i = 1; i <= 5; i++) {
+        document.getElementById(`btn2-${i}`).classList.toggle("active", i === pattern);
+    }
+    
+    const data = puzzleData[pattern];
+    
+    // 上部のハコパズルを動的描画
+    pStage.innerHTML = "";
+    data.blocks.forEach(b => {
+        const div = document.createElement("div");
+        div.className = `block label-${b.label.toLowerCase()}`;
+        div.innerHTML = `${b.text} <span style="font-size:0.75rem; opacity:0.7; block-size:fit-content;">[${b.label}]</span>`;
+        pStage.appendChild(div);
+    });
+    
+    // 天秤（イコール）の制御
+    left.innerText = data.left;
+    right.innerText = data.right;
+    sign.innerText = data.sign;
+    sign.className = `eq-sign ${data.eqClass}`;
+    text.innerHTML = data.desc;
+}
+
+// --- セクション3の制御 ---
+function revealSecret() {
+    const box = document.getElementById("bookBox");
+    box.classList.add("revealed");
+}
+
+// 初期化
+window.onload = function() {
+    changeLight(1);
+    checkEqual(1);
+};
+</script>
+
+</body>
+</html>
