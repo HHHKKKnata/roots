@@ -517,6 +517,7 @@ function getFormattedDateTime() {
 }
 
 // ゲームオーバー or 全クリア画面
+// ゲームオーバー or 全クリア画面
 function showGameOver(isWin) {
     const container = document.getElementById('gameContainer');
     const overlay = document.createElement('div');
@@ -530,11 +531,35 @@ function showGameOver(isWin) {
         title.style.color = 'var(--accent-primary)';
         title.style.fontSize = '3.5rem';
         
+        // ① クリア日時の表示
         const timeDisplay = document.createElement('div');
         timeDisplay.className = 'clear-time';
         timeDisplay.innerText = `Cleared at: ${getFormattedDateTime()}`;
+        
+        // ② 【追加機能】ファイル名（.htmlの前まで）を自動取得して表示するエリア
+        const fileDisplay = document.createElement('div');
+        fileDisplay.className = 'clear-time'; // 日時と同じスタイルを適用
+        fileDisplay.style.marginTop = '-20px'; // 日時との間隔を少し詰める調整
+        fileDisplay.style.color = 'var(--accent-hint)'; // 文字色をアクセントカラー（オレンジ系）にして見やすく
+
+        try {
+            // URLからファイル名部分を抽出
+            const path = window.location.pathname;
+            const page = path.substring(path.lastIndexOf('/') + 1);
+            // .html を除いた名前を取得（大文字小文字に対応）
+            const filenameWithoutExt = page.replace(/\.html$/i, '');
+            
+            // ファイル名が取得できていれば表示（空なら表示しない）
+            if (filenameWithoutExt) {
+                fileDisplay.innerText = `App ID: ${decodeURIComponent(filenameWithoutExt)}`;
+            }
+        } catch (e) {
+            console.error("ファイル名の取得に失敗しました:", e);
+        }
+
         overlay.appendChild(title);
         overlay.appendChild(timeDisplay);
+        overlay.appendChild(fileDisplay); // 画面に追加
     } else {
         title.innerText = 'GAME OVER';
         title.style.color = 'var(--accent-error)';
