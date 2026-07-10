@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodePen Style: English Spelling Puzzle (Unit2 15-30 Corrected)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=M+PLUS+Rounded+1c:wght=500;800;900&display=swap');
+
+:root {
+    --bg-main: #131417;
+    --bg-card: #1c1e22;
+    --bg-pool: #252830;
+    --text-light: #ffffff;
+    --text-muted: #9b9dad;
+    --accent-primary: #47cf73;
+    --accent-error: #ff4a4a;
+    --accent-audio: #0099ff;
+    --accent-hint: #ffaa00;
+    --border-color: #2f323b;
+}
+
+body {
+    font-family: 'M PLUS Rounded 1c', 'Fira Code', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-light);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.game-container {
+    max-width: 700px;
+    width: 100%;
+    background: var(--bg-card);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+}
+
+/* ヘッダー(CodePen風) */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+header h1 {
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin: 0;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+header h1::before {
+    content: '⬢';
+    color: #ae63e4;
+}
+.stage-counter {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    color: var(--accent-primary);
+    background: rgba(71, 207, 115, 0.1);
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+/* クイズ表示エリア */
+.quiz-display {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.jp-word {
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+    color: var(--text-light);
+}
+.miss-counter {
+    font-size: 0.85rem;
+    color: var(--accent-error);
+    font-family: 'Fira Code', monospace;
+}
+
+/* 音声ボタンコンテナ */
+.audio-panel {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    min-height: 45px;
+}
+.audio-btn {
+    background: none;
+    border: 2px solid var(--accent-audio);
+    color: var(--accent-audio);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+.audio-btn:hover {
+    background: var(--accent-audio);
+    color: white;
+}
+.audio-btn.hint-read {
+    border-color: var(--accent-hint);
+    color: var(--accent-hint);
+}
+.audio-btn.hint-read:hover {
+    background: var(--accent-hint);
+    color: #131417;
+}
+
+/* パズルゾーン */
+.puzzle-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    font-family: 'Fira Code', monospace;
+}
+.answer-zone {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 60px;
+    background: var(--bg-main);
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    justify-content: center;
+}
+.letter-pool {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 60px;
+    padding: 10px;
+    background: var(--bg-pool);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 30px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ピーススタイル */
+.letter-piece {
+    width: 42px;
+    height: 42px;
+    background: #444857;
+    border: 1px solid #5a5f73;
+    color: var(--text-light);
+    border-radius: 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 1.3rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.1s, background-color 0.1s;
+    box-shadow: 0 4px 0 #2a2c35;
+}
+.letter-piece:hover {
+    background: #5a5f73;
+    transform: translateY(-2px);
+}
+.letter-piece:active {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+/* コントロール */
+.control-panel {
+    display: flex;
+    gap: 15px;
+}
+.btn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 900;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-reset { background: #343743; color: var(--text-light); }
+.btn-reset:hover { background: #444857; }
+.btn-check { background: var(--accent-primary); color: #131417; }
+.btn-check:hover { background: #51e07f; }
+
+/* エフェクト用 */
+.shatter-shake { animation: shake 0.4s ease-in-out; }
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+.shatter {
+    animation: fall 0.5s ease-in forwards !important;
+}
+@keyframes fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(60px) rotate(20deg); opacity: 0; }
+}
+
+/* ゲームオーバー・クリア画面 */
+.game-over-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(19, 20, 23, 0.96);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 16px;
+    z-index: 100;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+}
+.game-over-title { font-size: 2.5rem; color: var(--accent-error); font-weight: 900; margin-bottom: 10px; text-transform: uppercase;}
+.clear-time { font-family: 'Fira Code', monospace; font-size: 1rem; color: var(--text-muted); margin-bottom: 30px; }
+.btn-restart { background: var(--text-light); color: var(--bg-main); padding: 12px 30px; font-weight: 900; border-radius: 8px; border: none; cursor: pointer; font-size: 1rem; transition: background-color 0.2s;}
+.btn-restart:hover { background: #e2e8f0; }
+
+/* 特殊ピース（記号やスペース）のスタイル調整 */
+.special-piece { background: rgba(255,255,255,0.08) !important; border: 1px dashed var(--border-color) !important; box-shadow: none !important; color: #ae63e4 !important; }
+</style>
+</head>
+<body>
+
+<div style="position: relative; width: 100%; max-width: 700px;">
+    <div class="game-container" id="gameContainer">
+        <header>
+            <h1>SPELLING PUZZLE MASTER</h1>
+            <div class="stage-counter" id="stageCounter">STAGE 1 / 16</div>
+        </header>
+
+        <div class="quiz-display">
+            <div class="jp-word" id="jpWord">読み込み中...</div>
+            <div class="miss-counter" id="missCounter">MISS: 0 / 3</div>
+        </div>
+
+        <div class="audio-panel" id="audioPanel">
+            </div>
+
+        <div class="puzzle-label">Answer</div>
+        <div class="answer-zone" id="answerZone"></div>
+
+        <div class="puzzle-label">Letter Pool</div>
+        <div class="letter-pool" id="letterPool"></div>
+
+        <div class="control-panel">
+            <button class="btn btn-reset" onclick="resetPuzzle()">RESET</button>
+            <button class="btn btn-check" id="submitBtn" onclick="checkAnswer()">SUBMIT</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ご提供いただいたHTMLの「No.15〜30」に完全に一致する16個の単語データ
+const originalData = [
+    { jp: "興味をもっている", en: "interested", roma: "インタレスティド" },
+    { jp: "忘れる", en: "forget", roma: "フォーゲット" },
+    { jp: "種類", en: "kind(s)", roma: "カインズ" },
+    { jp: "･････をベースにした", en: "based", roma: "ベースト" },
+    { jp: "･･･だから、･･･なので", en: "because", roma: "ビコーズ" },
+    { jp: "濃い、どろっとした", en: "thick", roma: "シック" },
+    { jp: "おすすめの･･･", en: "recommended", roma: "レコメンディド" },
+    { jp: "製造業者、メーカー", en: "manufacturer(s)", roma: "マニュファクチャラーズ" },
+    { jp: "早い", en: "early", roma: "アーリー" },
+    { jp: "･･･に興味がある", en: "be interested in -", roma: "ビー インタレスティド イン" },
+    { jp: "種類の~", en: "kind(s) of-", roma: "カインズ オヴ" },
+    { jp: "(物事・考えなど)を反映する", en: "reflect", roma: "リフレクト" },
+    { jp: "気候", en: "climate(s)", roma: "クライメイツ" },
+    { jp: "lifeの複数形", en: "lives", roma: "ライヴズ" },
+    { jp: "創造性(力)、独創性(力)", en: "creativity", roma: "クリエイティヴィティ" },
+    { jp: "シェフ、料理長", en: "chef(s)", roma: "シェフズ" }
+];
+
+let quizData = [];
+let currentIdx = 0;
+let userSelection = [];
+let currentMissCount = 0;
+let isAnimating = false;
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// データをランダムにシャッフルする関数
+function shuffleQuizData() {
+    quizData = [...originalData].sort(() => Math.random() - 0.5);
+}
+
+// 音響効果
+function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === 'success') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); 
+        osc.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.1); 
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+    } else if (type === 'fail') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    }
+}
+
+// 英語音声発音 (US) - iPhone強制音声セット対応
+function playUSVoice(text) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    u.rate = 0.8;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const enVoice = voices.find(v => v.lang.startsWith('en-'));
+    if (enVoice) u.voice = enVoice;
+
+    window.speechSynthesis.speak(u);
+}
+
+// 覚え読み音（日本語でローマ字読み）
+function playRomaVoice(text) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ja-JP';
+    u.rate = 0.8;
+    window.speechSynthesis.speak(u);
+}
+
+// クイズ読み込み
+function loadQuestion() {
+    isAnimating = false;
+    userSelection = [];
+    const q = quizData[currentIdx];
+    
+    document.getElementById('stageCounter').innerText = `STAGE ${currentIdx + 1} / ${quizData.length}`;
+    document.getElementById('jpWord').innerText = q.jp;
+    updateMissDisplay();
+    renderAudioPanel();
+    
+    const letters = q.en.split('');
+    const shuffled = [...letters].sort(() => Math.random() - 0.5);
+    
+    renderAnswerZone();
+    renderLetterPool(shuffled);
+}
+
+function updateMissDisplay() {
+    document.getElementById('missCounter').innerText = `MISS: ${currentMissCount} / 3`;
+}
+
+// アシスト音声パネルの制御 (1回ミスでUS、2回ミスで覚え読み音)
+function renderAudioPanel() {
+    const panel = document.getElementById('audioPanel');
+    panel.innerHTML = '';
+    const q = quizData[currentIdx];
+
+    // 1回以上間違えたら「単語発音ボタン」出現
+    if (currentMissCount >= 1) {
+        const btn = document.createElement('button');
+        btn.className = 'audio-btn';
+        btn.innerHTML = '🔊 単語発音 (US)';
+        btn.onclick = () => playUSVoice(q.en);
+        panel.appendChild(btn);
+    }
+
+    // 2回以上間違えたら「覚え読み音」出現
+    if (currentMissCount >= 2) {
+        const btn = document.createElement('button');
+        btn.className = 'audio-btn hint-read';
+        btn.innerHTML = '🗣️ 覚え読み音';
+        btn.onclick = () => playRomaVoice(q.roma);
+        panel.appendChild(btn);
+    }
+}
+
+// 記号や空白判定用関数
+function isSpecialChar(char) {
+    return [' ', '-', '(', ')', '~'].includes(char);
+}
+
+function renderAnswerZone() {
+    const zone = document.getElementById('answerZone');
+    zone.innerHTML = '';
+    userSelection.forEach((letter, idx) => {
+        const piece = document.createElement('div');
+        piece.className = 'letter-piece' + (isSpecialChar(letter) ? ' special-piece' : '');
+        piece.innerText = letter;
+        piece.onclick = () => removeLetter(idx);
+        zone.appendChild(piece);
+    });
+}
+
+function renderLetterPool(letters) {
+    const pool = document.getElementById('letterPool');
+    pool.innerHTML = '';
+    letters.forEach(letter => {
+        const piece = document.createElement('div');
+        piece.className = 'letter-piece' + (isSpecialChar(letter) ? ' special-piece' : '');
+        piece.innerText = letter;
+        piece.onclick = () => selectLetter(letter, piece);
+        pool.appendChild(piece);
+    });
+}
+
+function selectLetter(letter, element) {
+    if (isAnimating) return;
+    userSelection.push(letter);
+    renderAnswerZone();
+    element.remove();
+}
+
+function removeLetter(index) {
+    if (isAnimating) return;
+    const letter = userSelection[index];
+    userSelection.splice(index, 1);
+    renderAnswerZone();
+    
+    const piece = document.createElement('div');
+    piece.className = 'letter-piece' + (isSpecialChar(letter) ? ' special-piece' : '');
+    piece.innerText = letter;
+    piece.onclick = () => selectLetter(letter, piece);
+    document.getElementById('letterPool').appendChild(piece);
+}
+
+function resetPuzzle() {
+    if (isAnimating) return;
+    loadQuestion();
+}
+
+// 判定
+function checkAnswer() {
+    if (isAnimating) return;
+    const q = quizData[currentIdx];
+    const userAns = userSelection.join('');
+    
+    if (userAns === q.en) {
+        // 正解
+        playSound('success');
+        currentMissCount = 0;
+        currentIdx++;
+        if (currentIdx >= quizData.length) {
+            showGameOver(true);
+        } else {
+            loadQuestion();
+        }
+    } else {
+        // 不正解
+        playSound('fail');
+        currentMissCount++;
+        updateMissDisplay();
+        renderAudioPanel();
+        
+        if (currentMissCount >= 3) {
+            showGameOver(false);
+            return;
+        }
+
+        // パズルが崩れる演出
+        isAnimating = true;
+        const zone = document.getElementById('answerZone');
+        zone.classList.add('shatter-shake');
+        
+        const pieces = zone.querySelectorAll('.letter-piece');
+        pieces.forEach(p => p.classList.add('shatter'));
+
+        setTimeout(() => {
+            zone.classList.remove('shatter-shake');
+            loadQuestion();
+        }, 500);
+    }
+}
+
+// 現在のフォーマットされた日時を取得
+function getFormattedDateTime() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const hr = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    return `${y}-${m}-${d} ${hr}:${min}`;
+}
+
+// ゲームオーバー or 全クリア画面
+function showGameOver(isWin) {
+    const container = document.getElementById('gameContainer');
+    const overlay = document.createElement('div');
+    overlay.className = 'game-over-overlay';
+    
+    const title = document.createElement('div');
+    title.className = 'game-over-title';
+    
+    if (isWin) {
+        title.innerText = 'You nailed it!';
+        title.style.color = 'var(--accent-primary)';
+        title.style.fontSize = '3.5rem';
+        
+        const timeDisplay = document.createElement('div');
+        timeDisplay.className = 'clear-time';
+        timeDisplay.innerText = `Cleared at: ${getFormattedDateTime()}`;
+        overlay.appendChild(title);
+        overlay.appendChild(timeDisplay);
+    } else {
+        title.innerText = 'GAME OVER';
+        title.style.color = 'var(--accent-error)';
+        overlay.appendChild(title);
+    }
+
+    const btn = document.createElement('button');
+    btn.className = 'btn-restart';
+    btn.innerText = 'PLAY AGAIN';
+    btn.onclick = () => {
+        overlay.remove();
+        currentIdx = 0;
+        currentMissCount = 0;
+        shuffleQuizData(); // リプレイ時に毎回シャッフル
+        loadQuestion();
+    };
+
+    overlay.appendChild(btn);
+    container.style.position = 'relative';
+    container.appendChild(overlay);
+}
+
+window.onload = () => {
+    shuffleQuizData(); // 初回起動時にシャッフル
+    loadQuestion();
+    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+};
+</script>
+
+</body>
+</html>
