@@ -339,6 +339,12 @@ function playUSVoice(text) {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'en-US';
     u.rate = 0.8;
+    
+    // 【iPhone対策】利用可能な音声リストから「en-」で始まる英語音声を強制セット
+    const voices = window.speechSynthesis.getVoices();
+    const enVoice = voices.find(v => v.lang.startsWith('en-'));
+    if (enVoice) u.voice = enVoice;
+
     window.speechSynthesis.speak(u);
 }
 
