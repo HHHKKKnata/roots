@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Mission: When Clause Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #eef1f1;
+            --theme-color: #9bb3b1;
+            --card-bg: #cbdad8;
+            --text-color: #2c3e3b;
+            --transition-speed: 0.5s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: #333333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            transition: background-color var(--transition-speed) ease;
+        }
+
+        /* アニメーション用クラス */
+        .shake {
+            animation: shakeAnim 0.15s infinite alternate;
+        }
+        @keyframes shakeAnim {
+            0% { transform: translate(5px, 5px) rotate(1deg); }
+            100% { transform: translate(-5px, -5px) rotate(-1deg); }
+        }
+
+        /* カーテン・シャッター演出 */
+        #shutter-left, #shutter-right {
+            position: fixed;
+            top: 0;
+            width: 50vw;
+            height: 100vh;
+            background-color: #b9b2da;
+            z-index: 9999;
+            transition: transform 0.6s ease-in-out;
+            pointer-events: none;
+        }
+        #shutter-left { left: 0; transform: translateX(-100%); }
+        #shutter-right { right: 0; transform: translateX(100%); }
+        body.shutter-active #shutter-left { transform: translateX(0); }
+        body.shutter-active #shutter-right { transform: translateX(0); }
+
+        /* 全体コンテナ */
+        .game-container {
+            width: 100%;
+            max-width: 680px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        /* ヘッダー・インジケータ */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .info-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .hearts-container {
+            display: flex;
+            gap: 4px;
+            font-size: 1.4rem;
+        }
+
+        /* ミニマップ演出 */
+        .minimap {
+            background: white;
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .map-line {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+        .map-node {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all var(--transition-speed);
+        }
+        .map-node.active {
+            background: var(--theme-color);
+            color: var(--text-color);
+            transform: scale(1.15);
+            box-shadow: 0 0 10px rgba(0,0,0,0.15);
+        }
+        .player-icon {
+            position: absolute;
+            z-index: 3;
+            font-size: 1.4rem;
+            transition: left 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            top: calc(50% - 17px);
+        }
+
+        /* メインゲームステージ */
+        .stage-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 4px solid var(--theme-color);
+            transition: border-color var(--transition-speed);
+        }
+        .area-banner {
+            background: var(--theme-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 900;
+            text-align: center;
+            font-size: 1.1rem;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+        .instruction-text {
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.5;
+            color: #333;
+        }
+        .text-context {
+            background: #f7f9f9;
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 5px solid var(--theme-color);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* パズル表示・選択肢共通 */
+        .workspace {
+            min-height: 70px;
+            background: #f4f6f6;
+            border: 2px dashed #b5c2c2;
+            border-radius: 14px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+        .pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            min-height: 70px;
+            padding: 10px;
+            background: #fafbfc;
+            border-radius: 14px;
+        }
+        .tile {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+            transition: transform 0.1s, opacity 0.2s, background-color var(--transition-speed);
+            display: inline-block;
+        }
+        .tile:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .tile.shattering {
+            animation: shatterAnim 0.5s forwards ease-in;
+            pointer-events: none;
+        }
+        @keyframes shatterAnim {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(200px) rotate(350deg); opacity: 0; }
+        }
+
+        /* 選択肢ボタン型(エリア2用) */
+        .choice-btn {
+            background: #ffffff;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .choice-btn:hover {
+            background: #f0edf7;
+            border-color: var(--theme-color);
+        }
+        .choice-btn.selected {
+            background: var(--theme-color);
+            color: var(--text-color);
+            border-color: var(--theme-color);
+        }
+
+        /* コントロール・ボタン */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .btn-reset { background: #dfdfdf; color: #444; }
+        .btn-submit { background: #5cc29c; color: white; }
+        .btn-next { background: #4ba3e3; color: white; }
+
+        /* 動的常時表示ヒントシステム */
+        .hint-box {
+            background: #fff9e6;
+            border: 2px solid #ffe699;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #66521a;
+            font-weight: 700;
+            line-height: 1.5;
+            display: none;
+        }
+
+        /* 特殊モーダル・オーバーレイ（ゲームオーバー・クリア） */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        #game-over-overlay {
+            background-color: #131417;
+            color: #ff4d4d;
+        }
+        #game-over-overlay h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+        #clear-overlay {
+            background-color: #e6be7e;
+            color: #4a371c;
+        }
+        #clear-overlay h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        #clear-filename {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: rgba(255,255,255,0.3);
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+        }
+        .play-again-btn {
+            background: white;
+            color: #131417;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+        }
+
+        /* 警告画面 */
+        #warning-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.9);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ff3333;
+            font-weight: 900;
+            font-size: 2rem;
+            animation: pulse 0.5s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+
+        /* パーティクルエフェクト */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 1.5rem;
+            animation: particleAnim 1.5s forwards ease-out;
+        }
+        @keyframes particleAnim {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--mx), var(--my)) scale(0.5); opacity: 0; }
+        }
+
+        /* 語群注意書き */
+        .notice {
+            font-size: 0.8rem;
+            color: #c0392b;
+            font-weight: 700;
+            margin-top: -5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="shutter-left"></div>
+    <div id="shutter-right"></div>
+
+    <div id="warning-screen">
+        <div>⚠️ WARNING!! ⚠️</div>
+        <div style="font-size: 1.3rem; margin-top:10px;">BOSS APPROACHING</div>
+    </div>
+
+    <div id="game-over-overlay" class="overlay">
+        <h2>GAME OVER</h2>
+        <p style="color: #aaa; margin-bottom: 30px; font-weight:700;">ライフが完全になくなってしまった！</p>
+        <button class="play-again-btn" onclick="resetEntireGame()">Play Again</button>
+    </div>
+
+    <div id="clear-overlay" class="overlay">
+        <div id="clear-filename">ENGLISH MISSION</div>
+        <h2>You nailed it!</h2>
+        <p style="font-weight: 700; margin-bottom: 30px;">素晴らしい！すべてのエリアを完全攻略した！</p>
+        <button class="play-again-btn" style="background:#4a371c; color:white;" onclick="resetEntireGame()">Play Again</button>
+    </div>
+
+    <div class="game-container">
+        <header>
+            <div class="info-title" id="question-number-display">STAGE: 1/10</div>
+            <div class="hearts-container" id="hearts-display">❤️❤️❤️</div>
+        </header>
+
+        <div class="minimap">
+            <div class="map-line"></div>
+            <div class="player-icon" id="map-player">🏃‍♂️</div>
+            <div class="map-node active" id="node-1">P</div>
+            <div class="map-node" id="node-2">T</div>
+            <div class="map-node" id="node-3">B</div>
+        </div>
+
+        <div class="stage-card" id="stage-card">
+            <div class="area-banner" id="area-banner">エリア1：パズルロード</div>
+            
+            <div class="instruction-text" id="instruction-text">
+                正しい語順になるように単語カードを並び替えなさい。
+            </div>
+
+            <div class="text-context" id="text-context" style="display:none;"></div>
+
+            <!-- 問題主構造 -->
+            <div id="interactive-zone">
+                <!-- JavaScriptで組み立て -->
+            </div>
+
+            <div class="hint-box" id="hint-box"></div>
+
+            <div class="controls">
+                <button class="btn btn-reset" id="btn-reset" onclick="handleReset()">リセット</button>
+                <button class="btn btn-submit" id="btn-submit" onclick="handleSubmit()">決定 (SUBMIT)</button>
+                <button class="btn btn-next" id="btn-next" style="display:none;" onclick="handleNext()">次へ (NEXT)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Web Audio API によるシンセサイザー音源サウンド
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type, duration) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e){}
+        }
+        function soundCorrect() {
+            playTone(523.25, 'sine', 0.1);
+            setTimeout(() => playTone(659.25, 'sine', 0.1), 80);
+            setTimeout(() => playTone(783.99, 'sine', 0.2), 160);
+        }
+        function soundIncorrect() {
+            playTone(220, 'sawtooth', 0.3);
+            playTone(225, 'sawtooth', 0.3);
+        }
+
+        // 定期テスト分析に基づいた厳密な問題データ
+        // 教科書p.20に完全依拠：新出単語スペル、when接続詞、長文読解、whenの多様な文型
+        const questions = [
+            // エリア1: 新出単語スペルパズル (固有名詞排除、不要文字2〜3枚混入必須)
+            {
+                type: 'spell',
+                word: 'especially',
+                translation: '特に',
+                hint: '※使わない文字カードも余分に混ざっています<br>【アドバイス】e-s-p-e-c-i-a-l-l-y の順番だよ。最初の「e」を忘れないようにしよう。'
+            },
+            {
+                type: 'spell',
+                word: 'various',
+                translation: 'さまざまな、いろいろな',
+                hint: '※使わない文字カードも余分に混ざっています<br>【アドバイス】v-a-r-i-o-u-s のスペルだよ。最後の「ous」の並びに気をつけて。'
+            },
+            {
+                type: 'spell',
+                word: 'flavor',
+                translation: '味、風味',
+                hint: '※使わない文字カードも余分に混ざっています<br>【アドバイス】f-l-a-v-o-r と組み立てよう。発音につられて「u」を入れないように注意。'
+            },
+            {
+                type: 'spell',
+                word: 'topping',
+                translation: 'トッピング（上に乗せる具）',
+                hint: '※使わない文字カードも余分に混ざっています<br>【アドバイス】t-o-p-p-i-n-g だよ。「p」が2回重なる点に注目しよう。'
+            },
+            // エリア2: 謎解きの神殿 (教科書本文をトレース・リライトした読解と文脈・接続詞の選択)
+            {
+                type: 'choice',
+                instruction: 'マナのスピーチに基づく次の英文の空欄に入る、最も適切なものを選択肢から選びなさい。',
+                context: 'Mana likes ramen, especially Hakata ramen. When she goes to a ramen restaurant, she always orders tonkotsu ramen. Her favorite topping is Kikurage.',
+                question: 'When Mana eats Hakata ramen, she always gets (...).',
+                choices: ['soy sauce flavor', 'miso flavor', 'Kikurage on top'],
+                correct: 2,
+                hint: '文脈のヒント：マナが一番好きなトッピング（favorite topping）について述べている箇所を探しましょう。'
+            },
+            {
+                type: 'choice',
+                instruction: '日本とイギリスの状況に関する次の英文の空欄に入る、最も適切なものを選択肢から選びなさい。',
+                context: 'Actually, there are various ramen flavors in Japan. However, Mana didn\'t know about miso ramen when she lived in the U.K. Now, she wants to try it.',
+                question: 'Mana did NOT know about miso ramen when she (...).',
+                choices: ['visited a Japanese restaurant', 'lived in the U.K.', 'ordered tonkotsu ramen'],
+                correct: 1,
+                hint: '文脈のヒント：イギリス（the U.K.）に住んでいたとき（when she lived in...）に知らなかったと書かれています。'
+            },
+            {
+                type: 'choice',
+                instruction: '文脈から判断して、空欄に入れるのに最も適切な接続詞を1つ選びなさい。',
+                context: '(...) I lived in the U.K., I didn\'t know about miso ramen. But now I want to try various flavors in Japan.',
+                choices: ['When', 'Before', 'Because'],
+                correct: 0,
+                hint: '構造のヒント：「〜のとき」という、ある特定の過去の時期を表す接続詞を思い浮かべましょう。'
+            },
+            // エリア3: ボスバトル (新出文法 when の並び替え・完全英作文)
+            {
+                type: 'arrange',
+                instruction: '「私が朝食を食べるとき、私はテレビでニュースを見ます。」という意味になるように、単語カードを並び替えなさい。',
+                context: '練習問題の例：When I eat breakfast, I watch the news on TV.',
+                sentence: ['When', 'I', 'eat', 'breakfast,', 'I', 'watch', 'the', 'news', 'on', 'TV.'],
+                hint: '条件のヒント：Whenで始まる塊をカンマ(,)で区切ってから、主節「私はテレビでニュースを見る」を続けます。'
+            },
+            {
+                type: 'arrange',
+                instruction: '「私に自由な時間があるとき、私はよく音楽を聴きます。」という意味になるように、単語カードを並び替えなさい。',
+                context: '練習問題①の応用：I have free time / I often listen to music',
+                sentence: ['When', 'I', 'have', 'free', 'time,', 'I', 'often', 'listen', 'to', 'music.'],
+                hint: '条件のヒント：「自由な時間があるとき」は When I have free time となります。カンマを忘れずに。'
+            },
+            {
+                type: 'arrange',
+                instruction: '「私はこの辞書を使います、私が英語を勉強するときは。」という意味になるように、単語カードを並び替えなさい。',
+                context: '練習問題②の応用（whenが後ろに来るパターン）：I study English / I use this dictionary',
+                sentence: ['I', 'use', 'this', 'dictionary', 'when', 'I', 'study', 'English.'],
+                hint: '条件のヒント：whenの塊を後ろに置くときは、前半の文との間にカンマ(,)を置かないのがルールです。'
+            }
+        ];
+
+        // グローバルゲーム状態
+        let currentIdx = 0;
+        let lives = 3;
+        let selectedAnswers = []; // スペルや並び替えで選択されたデータ
+        let originalPool = [];     // シャッフルされた選択肢のバックアップ
+        let areaTheme = 1;         // 1: Puzzle, 2: Temple, 3: Boss, 4: Clear
+
+        // 起動時処理
+        window.onload = function() {
+            // ファイル名自動取得
+            let path = window.location.pathname;
+            let filename = path.substring(path.lastIndexOf('/') + 1).replace('.html', '');
+            if(!filename || filename === '') filename = "UNIT5-1_WHEN_GAME";
+            document.getElementById('clear-filename').innerText = decodeURIComponent(filename) + " CLEAR!!";
+
+            loadQuestion();
+            updateHearts();
+            updateMinimap();
+        };
+
+        // カラーテーマ動的変更
+        function applyTheme(area) {
+            areaTheme = area;
+            const root = document.documentElement;
+            if (area === 1) {
+                root.style.setProperty('--theme-color', '#9bb3b1');
+                root.style.setProperty('--card-bg', '#cbdad8');
+                root.style.setProperty('--text-color', '#2c3e3b');
+                document.getElementById('area-banner').innerText = "エリア1：パズルロード";
+            } else if (area === 2) {
+                root.style.setProperty('--theme-color', '#b9b2da');
+                root.style.setProperty('--card-bg', '#d5d1ea');
+                root.style.setProperty('--text-color', '#322c4a');
+                document.getElementById('area-banner').innerText = "エリア2：謎解きの神殿";
+            } else if (area === 3) {
+                root.style.setProperty('--theme-color', '#d2a0a6');
+                root.style.setProperty('--card-bg', '#e7cbd0');
+                root.style.setProperty('--text-color', '#4a2c30');
+                document.getElementById('area-banner').innerText = "エリア3：ボスバトル";
+            } else if (area === 4) {
+                root.style.setProperty('--theme-color', '#e6be7e');
+                root.style.setProperty('--card-bg', '#f3e1c3');
+                root.style.setProperty('--text-color', '#4a371c');
+            }
+        }
+
+        function updateHearts() {
+            let heartsStr = "";
+            for(let i=0; i<3; i++) {
+                heartsStr += (i < lives) ? "❤️" : "🖤";
+            }
+            document.getElementById('hearts-display').innerText = heartsStr;
+        }
+
+        function updateMinimap() {
+            let percent = "10%";
+            if(currentIdx >= 4 && currentIdx <= 6) {
+                percent = "50%";
+                document.getElementById('node-1').classList.remove('active');
+                document.getElementById('node-2').classList.add('active');
+                document.getElementById('node-3').classList.remove('active');
+            } else if(currentIdx >= 7) {
+                percent = "90%";
+                document.getElementById('node-1').classList.remove('active');
+                document.getElementById('node-2').classList.remove('active');
+                document.getElementById('node-3').classList.add('active');
+            } else {
+                document.getElementById('node-1').classList.add('active');
+                document.getElementById('node-2').classList.remove('active');
+                document.getElementById('node-3').classList.remove('active');
+            }
+            document.getElementById('map-player').style.left = `calc(${percent} - 17px)`;
+        }
+
+        // 設問読み込み
+        function loadQuestion() {
+            const q = questions[currentIdx];
+            document.getElementById('question-number-display').innerText = `STAGE: ${currentIdx + 1} / 10`;
+            
+            // エリアテーマ判定
+            if(currentIdx < 4) applyTheme(1);
+            else if(currentIdx < 7) applyTheme(2);
+            else applyTheme(3);
+
+            updateMinimap();
+
+            // DOM初期化
+            const textContext = document.getElementById('text-context');
+            const interactiveZone = document.getElementById('interactive-zone');
+            const instruction = document.getElementById('instruction-text');
+            const hintBox = document.getElementById('hint-box');
+            
+            // ボタン制御
+            document.getElementById('btn-submit').style.display = "block";
+            document.getElementById('btn-reset').style.display = "block";
+            document.getElementById('btn-next').style.display = "none";
+            hintBox.style.display = "none";
+
+            selectedAnswers = [];
+
+            if (q.type === 'spell') {
+                instruction.innerHTML = `新出単語スペルパズル：次の意味をもつ単語を正しく完成させなさい。<br><span style="font-size:1.3rem; color:#2c3e3b; font-weight:900;">「${q.translation}」</span>`;
+                textContext.style.display = "none";
+
+                // プールの構築（ダミー文字2〜3文字を付与して完全シャッフル）
+                let letters = q.word.split('');
+                const dummys = ['x', 'k', 'm', 'p', 'e', 't', 's'];
+                let count = 0;
+                // 単語に含まれない文字を2〜3枚ピックアップ
+                for(let d of dummys) {
+                    if(!letters.includes(d)) {
+                        letters.push(d);
+                        count++;
+                        if(count >= 2) break;
+                    }
+                }
+
+                // フィッシャー–イェーツのシャッフル
+                shuffleArray(letters);
+                originalPool = [...letters];
+
+                interactiveZone.innerHTML = `
+                    <div class="notice">※使わない文字カードも余分に混ざっています</div>
+                    <div class="workspace" id="spell-workspace" style="margin-top:10px;"></div>
+                    <div class="pool" id="spell-pool" style="margin-top:15px;"></div>
+                `;
+                
+                renderSpellPool();
+            } 
+            else if (q.type === 'choice') {
+                instruction.innerText = q.instruction;
+                textContext.style.display = "block";
+                textContext.innerHTML = `<strong>【Story Context】</strong><br>${q.context}`;
+
+                interactiveZone.innerHTML = `
+                    <div style="font-weight:700; margin-bottom:15px; font-size:1.1rem; border-bottom:2px dashed var(--theme-color); padding-bottom:8px;">Q. ${q.question}</div>
+                    <div style="display:flex; flex-direction:column; gap:10px;" id="choices-container"></div>
+                `;
+
+                const container = document.getElementById('choices-container');
+                q.choices.forEach((choice, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
+                    btn.innerText = `${idx + 1}. ${choice}`;
+                    btn.onclick = () => {
+                        document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        selectedAnswers = [idx];
+                    };
+                    container.appendChild(btn);
+                });
+            } 
+            else if (q.type === 'arrange') {
+                instruction.innerHTML = `文法ターゲット(when)：${q.instruction}`;
+                textContext.style.display = "block";
+                textContext.innerHTML = `<strong>【ヒントの状況】</strong> ${q.context}`;
+
+                // 単語カードプールをシャッフル（絶対に初期状態で正解順に並ばせない）
+                let words = [...q.sentence];
+                while(isArrEqual(words, q.sentence)) {
+                    shuffleArray(words);
+                }
+                originalPool = [...words];
+
+                interactiveZone.innerHTML = `
+                    <div class="workspace" id="arrange-workspace"></div>
+                    <div class="pool" id="arrange-pool" style="margin-top:15px;"></div>
+                `;
+
+                renderArrangePool();
+            }
+        }
+
+        // 配列シャッフル
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+        }
+        function isArrEqual(a, b) {
+            return a.length === b.length && a.every((val, index) => val === b[index]);
+        }
+
+        // スペルパズル描画
+        function renderSpellPool() {
+            const poolEl = document.getElementById('spell-pool');
+            const workEl = document.getElementById('spell-workspace');
+            poolEl.innerHTML = '';
+            workEl.innerHTML = '';
+
+            // ワークスペース表示
+            selectedAnswers.forEach((letObj, idx) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.innerText = letObj.char;
+                tile.onclick = () => {
+                    // ワークスペースから削除してプールに戻す
+                    selectedAnswers.splice(idx, 1);
+                    renderSpellPool();
+                };
+                workEl.appendChild(tile);
+            });
+
+            // プール表示
+            originalPool.forEach((char, idx) => {
+                // すでにワークスペースで使われているインデックスか確認
+                const isUsed = selectedAnswers.some(ans => ans.origIdx === idx);
+                if(!isUsed) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.innerText = char;
+                    tile.onclick = () => {
+                        selectedAnswers.push({ char: char, origIdx: idx });
+                        renderSpellPool();
+                    };
+                    poolEl.appendChild(tile);
+                }
+            });
+        }
+
+        // 並び替えパズル描画
+        function renderArrangePool() {
+            const poolEl = document.getElementById('arrange-pool');
+            const workEl = document.getElementById('arrange-workspace');
+            poolEl.innerHTML = '';
+            workEl.innerHTML = '';
+
+            selectedAnswers.forEach((wordObj, idx) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.innerText = wordObj.word;
+                tile.onclick = () => {
+                    selectedAnswers.splice(idx, 1);
+                    renderArrangePool();
+                };
+                workEl.appendChild(tile);
+            });
+
+            originalPool.forEach((word, idx) => {
+                const isUsed = selectedAnswers.some(ans => ans.origIdx === idx);
+                if(!isUsed) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.innerText = word;
+                    tile.onclick = () => {
+                        selectedAnswers.push({ word: word, origIdx: idx });
+                        renderArrangePool();
+                    };
+                    poolEl.appendChild(tile);
+                }
+            });
+        }
+
+        // 各種パズルリセット処理
+        function handleReset() {
+            const q = questions[currentIdx];
+            selectedAnswers = [];
+            if(q.type === 'spell') {
+                renderSpellPool();
+            } else if(q.type === 'choice') {
+                document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+            } else if(q.type === 'arrange') {
+                renderArrangePool();
+            }
+        }
+
+        // 判定システム
+        function handleSubmit() {
+            const q = questions[currentIdx];
+            let isCorrect = false;
+
+            if (q.type === 'spell') {
+                const userWord = selectedAnswers.map(a => a.char).join('');
+                if(userWord === q.word) isCorrect = true;
+            } 
+            else if (q.type === 'choice') {
+                if(selectedAnswers.length > 0 && selectedAnswers[0] === q.correct) isCorrect = true;
+            } 
+            else if (q.type === 'arrange') {
+                const userSentence = selectedAnswers.map(a => a.word);
+                if(isArrEqual(userSentence, q.sentence)) isCorrect = true;
+            }
+
+            if(isCorrect) {
+                soundCorrect();
+                createParticles();
+                
+                // ヒントボックスを隠す
+                document.getElementById('hint-box').style.display = "none";
+                
+                // 次へボタンへのトランスフォーム
+                document.getElementById('btn-submit').style.display = "none";
+                document.getElementById('btn-reset').style.display = "none";
+                document.getElementById('btn-next').style.display = "block";
+                document.getElementById('btn-next').focus();
+            } else {
+                soundIncorrect();
+                triggerShatterEffect();
+                lives--;
+                updateHearts();
+
+                // 常時表示型個別アドバイスの提示
+                const hintBox = document.getElementById('hint-box');
+                hintBox.innerHTML = `❌ まちがいがあります。<br>${q.hint}`;
+                hintBox.style.display = "block";
+
+                if(lives <= 0) {
+                    setTimeout(() => {
+                        document.getElementById('game-over-overlay').style.display = "flex";
+                    }, 500);
+                }
+            }
+        }
+
+        // ミス時：砕け散りアニメーション
+        function triggerShatterEffect() {
+            const card = document.getElementById('stage-card');
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 400);
+
+            const tiles = document.querySelectorAll('.workspace .tile');
+            tiles.forEach(tile => {
+                tile.classList.add('shattering');
+            });
+
+            setTimeout(() => {
+                handleReset();
+            }, 450);
+        }
+
+        // 演出用パーティクル生成
+        function createParticles() {
+            const btn = document.getElementById('btn-submit');
+            const rect = btn.getBoundingClientRect();
+            for(let i=0; i<15; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.innerText = ['✨','🎉','👍','⭐','🔥'][Math.floor(Math.random()*5)];
+                p.style.left = (rect.left + window.scrollX + rect.width/2) + 'px';
+                p.style.top = (rect.top + window.scrollY + rect.height/2) + 'px';
+                
+                const mx = (Math.random() - 0.5) * 200;
+                const my = (Math.random() - 0.5) * 200 - 50;
+                p.style.setProperty('--mx', `${mx}px`);
+                p.style.setProperty('--my', `${my}px`);
+
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        // 次へ進む処理（エリア間カットイン制御を含む）
+        function handleNext() {
+            if(currentIdx === 3) {
+                // エリア1からエリア2への遷移：シャッター演出
+                document.body.classList.add('shutter-active');
+                setTimeout(() => {
+                    currentIdx++;
+                    loadQuestion();
+                    document.body.classList.remove('shutter-active');
+                }, 600);
+            } 
+            else if(currentIdx === 6) {
+                // エリア2からエリア3への重要演出：通常正解から2秒待機後にWARNING
+                document.getElementById('stage-card').style.opacity = "0.1";
+                setTimeout(() => {
+                    // 2秒待機後に激しい画面揺れとボス接近警告
+                    const warning = document.getElementById('warning-screen');
+                    warning.style.display = "flex";
+                    playTone(180, 'sawtooth', 0.4);
+                    setTimeout(() => playTone(180, 'sawtooth', 0.4), 300);
+                    
+                    document.body.classList.add('shake');
+
+                    setTimeout(() => {
+                        warning.style.display = "none";
+                        document.body.classList.remove('shake');
+                        document.getElementById('stage-card').style.opacity = "1";
+                        currentIdx++;
+                        loadQuestion();
+                    }, 2000);
+                }, 2000); // 厳格な2秒のウェイト
+            } 
+            else if(currentIdx === 9) {
+                // 全ステージクリア！イエローゴールデンテーマへ変貌
+                applyTheme(4);
+                document.getElementById('clear-overlay').style.display = "flex";
+                // 祝福パーティクル無限ループ
+                setInterval(createParticles, 600);
+            } 
+            else {
+                currentIdx++;
+                loadQuestion();
+            }
+        }
+
+        // ゲーム完全初期化
+        function resetEntireGame() {
+            currentIdx = 0;
+            lives = 3;
+            document.getElementById('game-over-overlay').style.display = "none";
+            document.getElementById('clear-overlay').style.display = "none";
+            updateHearts();
+            loadQuestion();
+        }
+    </script>
+</body>
+</html>
