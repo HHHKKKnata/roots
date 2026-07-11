@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Quest - Merlion & Singapore</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #eef1f1;
+            --theme-color: #9bb3b1;
+            --card-bg: #cbdad8;
+            --text-color: #2c3e3b;
+            --accent-color: #e67e22;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --transition-speed: 0.5s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            padding-bottom: 40px;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 650px;
+            padding: 20px;
+            position: relative;
+        }
+
+        header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .status-item {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        #hearts {
+            color: #e74c3c;
+            font-size: 1.3rem;
+        }
+
+        /* ミニマップ */
+        #minimap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .map-point {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 2;
+        }
+
+        .map-point.active {
+            background: var(--theme-color);
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 0 10px var(--theme-color);
+        }
+
+        .map-line {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background: #ddd;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .map-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: var(--theme-color);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        #player-icon {
+            position: absolute;
+            font-size: 1.4rem;
+            top: -5px;
+            transition: left 0.5s ease;
+            z-index: 3;
+            transform: translateX(-50%);
+        }
+
+        /* メインカード */
+        #stage-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border: 3px solid var(--theme-color);
+            transition: border-color var(--transition-speed);
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px dashed var(--theme-color);
+            padding-bottom: 10px;
+        }
+
+        .instruction {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .warning-text {
+            font-size: 0.85rem;
+            color: #c0392b;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* パズルエリア */
+        .puzzle-workspace {
+            min-height: 80px;
+            background: var(--bg-color);
+            border: 2px dashed #bbb;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: center;
+            justify-content: center;
+            padding: 10px;
+            gap: 8px;
+        }
+
+        .pool-area {
+            min-height: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            padding: 10px;
+            gap: 8px;
+            background: rgba(0,0,0,0.02);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tile {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+            transition: transform 0.1s, background-color 0.2s;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .tile:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+        }
+
+        /* 選択肢形式 */
+        .choices-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .choice-btn {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            text-align: left;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .choice-btn:hover {
+            opacity: 0.9;
+        }
+
+        .choice-btn.selected {
+            background: var(--theme-color);
+            color: white;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+        }
+
+        /* コントロールボタン */
+        .control-btns {
+            margin-top: auto;
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+            transition: all 0.2s;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+        }
+
+        .btn-reset {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-submit {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-next {
+            background: #3498db;
+            color: white;
+            display: none;
+        }
+
+        /* ヒントシステム */
+        #hint-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: #fdf2e9;
+            border-left: 5px solid #e67e22;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: none;
+            color: #7e5109;
+            font-weight: bold;
+        }
+
+        /* 長文コンテナ（エリア2用） */
+        .reading-context {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--theme-color);
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        /* 特殊演出用コンテナ */
+        #curtain {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: -50%;
+            width: 50%;
+            background: #b9b2da;
+            z-index: 100;
+            transition: left 0.5s ease;
+        }
+        #curtain-right {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: -50%;
+            width: 50%;
+            background: #b9b2da;
+            z-index: 100;
+            transition: right 0.5s ease;
+        }
+
+        #warning-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 110;
+            color: #ff3f3f;
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* ゲームオーバー画面 */
+        #gameover-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #131417;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            color: #e74c3c;
+        }
+
+        #gameover-screen h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* クリア画面 */
+        #clear-screen {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        #clear-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #7e5109;
+        }
+
+        .particle {
+            position: absolute;
+            font-size: 1.5rem;
+            pointer-events: none;
+            animation: floatAway 2s ease-out forwards;
+        }
+
+        /* アニメーション用クラス */
+        .shake {
+            animation: shakeAnim 0.1s infinite alternate;
+        }
+
+        @keyframes shakeAnim {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            100% { transform: translate(-1px, -2px) rotate(1deg); }
+        }
+
+        .shatter {
+            animation: shatterAnim 0.6s forwards ease-in;
+        }
+
+        @keyframes shatterAnim {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(300px) rotate(45deg); opacity: 0; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes floatAway {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+        }
+
+        .blink {
+            animation: blinkAnim 0.5s infinite alternate;
+        }
+        @keyframes blinkAnim {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="curtain"></div>
+<div id="curtain-right"></div>
+<div id="warning-overlay">
+    <div class="blink">⚠️ WARNING!! BOSS APPROACHING ⚠️</div>
+</div>
+
+<div id="gameover-screen">
+    <h1>GAME OVER</h1>
+    <button class="btn" style="background:#555; color:white;" onclick="location.reload()">もう一度挑戦する</button>
+</div>
+
+<div id="game-container">
+    <header>
+        <div class="status-item" id="stage-display">STAGE: 1 / 10</div>
+        <div class="status-item" id="hearts">❤️❤️❤️</div>
+    </header>
+
+    <!-- ミニマップ -->
+    <div id="minimap">
+        <div class="map-line"><div class="map-progress" id="map-progress"></div></div>
+        <div id="player-icon">🏃‍♂️</div>
+        <div class="map-point active" id="mp-1">🧩</div>
+        <div class="map-point" id="mp-2">🏛️</div>
+        <div class="map-point" id="mp-3">👹</div>
+    </div>
+
+    <!-- メインパズルボード -->
+    <div id="stage-card">
+        <div id="game-play-area">
+            <h2 id="stage-title">パズルロード (問1)</h2>
+            <div class="instruction" id="instruction-text">指示文</div>
+            <div class="warning-text" id="warning-info"></div>
+
+            <!-- 長文表示エリア（必要な場合のみ表示） -->
+            <div class="reading-context" id="reading-box" style="display:none;"></div>
+
+            <!-- パズルワークスペース -->
+            <div class="puzzle-workspace" id="workspace"></div>
+
+            <!-- 単語カードプール -->
+            <div class="pool-area" id="pool"></div>
+
+            <!-- 選択肢エリア -->
+            <div class="choices-area" id="choices" style="display:none;"></div>
+        </div>
+
+        <!-- 結果＆クリア画面 -->
+        <div id="clear-screen">
+            <div id="clear-file-name">FILE CLEAR</div>
+            <div id="clear-title">🎉 You nailed it! 🎉</div>
+            <p style="font-size:1.2rem; font-weight:bold;">すべてのステージをクリアしました！定期テスト対策は完璧です！</p>
+            <button class="btn" style="background:var(--theme-color); color:var(--text-color); margin-top:25px;" onclick="location.reload()">最初から遊ぶ</button>
+        </div>
+
+        <!-- ヒント表示 -->
+        <div id="hint-box"></div>
+
+        <!-- コントロールボタン -->
+        <div class="control-btns" id="control-panel">
+            <button class="btn btn-reset" id="reset-btn">RESET</button>
+            <button class="btn btn-submit" id="submit-btn">SUBMIT</button>
+            <button class="btn btn-next" id="next-btn">NEXT</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ----------------------------------------------------------------
+    // 1. データ定義（教科書の内容に基づく完全リライト＆文型トレース）
+    // ----------------------------------------------------------------
+    const questions = [
+        // エリア1: パズルロード（新出単語スペル・基本語順）
+        {
+            id: 1,
+            area: 1,
+            type: "spelling",
+            word: "famous",
+            instruction: "「有名な」という意味になるように、アルファベットカードを正しい順に並び替えなさい。",
+            warning: "※使わない文字カードも余分に混ざっています",
+            dummys: ["x", "r"],
+            hint: "教科書でマーライオンを表現する際に使われていた形容詞です。 f-a-m-... と続きます。"
+        },
+        {
+            id: 2,
+            area: 1,
+            type: "spelling",
+            word: "weigh",
+            instruction: "「〜の重さがある」という意味になるように、アルファベットカードを正しい順に並び替えなさい。",
+            warning: "※使わない文字カードも余分に混ざっています",
+            dummys: ["a", "t"],
+            hint: "重さを表す動詞です。三人称単数の s がつく前の原形です。 w-e-i-... と続きます。"
+        },
+        {
+            id: 3,
+            area: 1,
+            type: "scramble",
+            tokens: ["It", "is", "ten", "meters", "long,"],
+            instruction: "「それは長さが10メートルあります」という意味になるように、単語カードを正しく並び替えなさい。",
+            warning: "",
+            hint: "教科書の「It’s 8.6 meters tall」と同じ構造です。[主語 + 動詞 + 数値・単位 + 形容詞] の順になります。"
+        },
+        {
+            id: 4,
+            area: 1,
+            type: "scramble",
+            tokens: ["It", "has", "the", "head", "of", "a", "tiger."],
+            instruction: "「それはトラの頭を持っています」という意味になるように、単語カードを正しく並び替えなさい。",
+            warning: "",
+            hint: "教科書の「It has the body of a fish」と全く同じ構造です。「〜の頭」は the head of ... と表現します。"
+        },
+
+        // エリア2: 謎解きの神殿（長文読解・選択形式）
+        {
+            id: 5,
+            area: 2,
+            type: "choice",
+            context: "Text Snippet:<br>Today I visited Merlion Park. I saw the famous Merlion there. It’s 8.6 meters tall, and it weighs 70 tons.",
+            instruction: "マヤがマーライオンパークで見たものについて、内容と一致するものを選択肢から選びなさい。",
+            choices: [
+                "マーライオンは高さが70メートルある。",
+                "マーライオンは重さが70トンある。",
+                "マーライオンは魚の頭とライオンの体を持つ。"
+            ],
+            correctIdx: 1,
+            hint: "本文の「weighs 70 tons」に注目しましょう。体と頭の組み合わせも本文をよく読んでください。"
+        },
+        {
+            id: 6,
+            area: 2,
+            type: "choice",
+            context: "Text Snippet:<br>After that, I went shopping. I found four different languages on Singapore dollars: Malay, Chinese, Tamil, and English.",
+            instruction: "マヤがショッピングの際に気づいたことについて、適切なものを選択肢から選びなさい。",
+            choices: [
+                "シンガポールのお札には4つの異なる言語が書かれていた。",
+                "シンガポールでは英語しか使われていなかった。",
+                "シンガポールのお札にはマヤの絵が描かれていた。"
+            ],
+            correctIdx: 0,
+            hint: "「found four different languages on Singapore dollars」という文の訳を考えましょう。"
+        },
+        {
+            id: 7,
+            area: 2,
+            type: "choice",
+            context: "Text Snippet:<br>People in Singapore speak different languages. For example, my uncle speaks Tamil and English. So, I can communicate with him in English.",
+            instruction: "マヤがおじさんと英語でコミュニケーションが取れる理由として、最も適切なものを選択肢から選びなさい。",
+            choices: [
+                "おじさんがマレー語と中国語を話すから。",
+                "おじさんがタミル語と英語を話すから。",
+                "マヤがタミル語を完璧に話せるから。"
+            ],
+            correctIdx: 1,
+            hint: "「my uncle speaks Tamil and English. So, I can...」の前後のつながりを確認してください。"
+        },
+
+        // エリア3: ボスバトル（応用並び替え・英文完成）
+        {
+            id: 8,
+            area: 3,
+            type: "scramble",
+            tokens: ["I", "found", "three", "different", "colors", "on the flag."],
+            instruction: "「私は国旗の上に3つの異なる色を見つけました」という意味になるように、単語カードを正しく並び替えなさい。",
+            warning: "",
+            hint: "教科書の「I found four different languages on Singapore dollars」の動詞型をトレースした問題です。"
+        },
+        {
+            id: 9,
+            area: 3,
+            type: "scramble",
+            tokens: ["I", "can", "communicate", "with", "them", "in", "Japanese."],
+            instruction: "「私は彼らと日本語でコミュニケーションをとることができます」という意味になるように、単語カードを正しく並び替えなさい。",
+            warning: "",
+            hint: "教科書の「I can communicate with him in English.」をもとにした表現です。in + 言語 の形に注意！"
+        },
+        {
+            id: 10,
+            area: 3,
+            type: "scramble",
+            tokens: ["Students", "in", "Japan", "speak", "Japanese", "at school."],
+            instruction: "「日本の生徒たちは学校で日本語を話します」という意味になるように、単語カードを正しく並び替えなさい。",
+            warning: "",
+            hint: "教科書の「People in Singapore speak different languages.」の主語と動詞の構造をそのまま応用します。"
+        }
+    ];
+
+    // ----------------------------------------------------------------
+    // 2. 状態管理
+    // ----------------------------------------------------------------
+    let currentStageIdx = 0;
+    let lives = 3;
+    let selectedAnswer = []; // パズル用
+    let selectedChoiceIdx = -1; // 選択肢用
+    let currentHintActive = ""; 
+
+    // オーディオコンテキスト（効果音用）
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, type, duration) {
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    function playCorrectSound() {
+        playTone(523.25, 'sine', 0.15); // C5
+        setTimeout(() => playTone(659.25, 'sine', 0.15), 100); // E5
+        setTimeout(() => playTone(783.99, 'sine', 0.2), 200); // G5
+    }
+
+    function playWrongSound() {
+        playTone(180, 'sawtooth', 0.4);
+    }
+
+    // ----------------------------------------------------------------
+    // 3. テーマカラー制御
+    // ----------------------------------------------------------------
+    function updateTheme(area, forceClear = false) {
+        const root = document.documentElement;
+        if (forceClear) {
+            // ゲームクリア時（Team Forming イエロー）
+            root.style.setProperty('--bg-color', '#f9ebd2');
+            root.style.setProperty('--theme-color', '#e6be7e');
+            root.style.setProperty('--card-bg', '#f3e3ca');
+            root.style.setProperty('--text-color', '#5a4525');
+            return;
+        }
+
+        if (area === 1) {
+            root.style.setProperty('--bg-color', '#eef1f1');
+            root.style.setProperty('--theme-color', '#9bb3b1');
+            root.style.setProperty('--card-bg', '#cbdad8');
+            root.style.setProperty('--text-color', '#2c3e3b');
+        } else if (area === 2) {
+            root.style.setProperty('--bg-color', '#f0eff7');
+            root.style.setProperty('--theme-color', '#b9b2da');
+            root.style.setProperty('--card-bg', '#d5d1ea');
+            root.style.setProperty('--text-color', '#322c4a');
+        } else if (area === 3) {
+            root.style.setProperty('--bg-color', '#f7eff0');
+            root.style.setProperty('--theme-color', '#d2a0a6');
+            root.style.setProperty('--card-bg', '#e7cbd0');
+            root.style.setProperty('--text-color', '#4a2c30');
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // 4. ミニマップ描画更新
+    // ----------------------------------------------------------------
+    function updateMinimap(area, stageNum) {
+        document.querySelectorAll('.map-point').forEach(p => p.classList.remove('active'));
+        const mp1 = document.getElementById('mp-1');
+        const mp2 = document.getElementById('mp-2');
+        const mp3 = document.getElementById('mp-3');
+        const progress = document.getElementById('map-progress');
+        const player = document.getElementById('player-icon');
+
+        let leftPos = "10%";
+        if (area === 1) {
+            mp1.classList.add('active');
+            progress.style.width = "0%";
+            leftPos = (10 + (stageNum - 1) * 10) + "%";
+        } else if (area === 2) {
+            mp2.classList.add('active');
+            progress.style.width = "50%";
+            leftPos = (50 + (stageNum - 5) * 12) + "%";
+        } else if (area === 3) {
+            mp3.classList.add('active');
+            progress.style.width = "100%";
+            leftPos = (80 + (stageNum - 8) * 10) + "%";
+        }
+        player.style.left = leftPos;
+    }
+
+    // ----------------------------------------------------------------
+    // 5. ステージのレンダリング
+    // ----------------------------------------------------------------
+    function renderStage() {
+        if (currentStageIdx >= questions.length) {
+            showGameClear();
+            return;
+        }
+
+        const q = questions[currentStageIdx];
+        
+        // 基本UI初期化
+        updateTheme(q.area);
+        updateMinimap(q.area, q.id);
+        document.getElementById('stage-display').innerText = `STAGE: ${q.id} / ${questions.length}`;
+        document.getElementById('stage-title').innerText = 
+            q.area === 1 ? `エリア1：パズルロード (問${q.id})` :
+            q.area === 2 ? `エリア2：謎解きの神殿 (問${q.id})` : `エリア3：ボスバトル (問${q.id})`;
+        
+        document.getElementById('instruction-text').innerText = q.instruction;
+        document.getElementById('warning-info').innerText = q.warning || "";
+        
+        // ボックス初期化
+        const workspace = document.getElementById('workspace');
+        const pool = document.getElementById('pool');
+        const choices = document.getElementById('choices');
+        const readingBox = document.getElementById('reading-box');
+        const hintBox = document.getElementById('hint-box');
+
+        workspace.innerHTML = "";
+        pool.innerHTML = "";
+        choices.innerHTML = "";
+        workspace.style.display = "flex";
+        pool.style.display = "flex";
+        choices.style.display = "none";
+        readingBox.style.display = "none";
+        
+        // 次へボタン非表示、決定系表示
+        document.getElementById('submit-btn').style.display = "block";
+        document.getElementById('reset-btn').style.display = "block";
+        document.getElementById('next-btn').style.display = "none";
+
+        // ヒントの保持状態をリセット（ただし前ステージで出たものは消す）
+        hintBox.style.display = "none";
+        currentHintActive = q.hint;
+
+        selectedAnswer = [];
+        selectedChoiceIdx = -1;
+
+        if (q.type === "spelling") {
+            // スペルパズル用プール生成（完全シャッフル＋ダミー）
+            let poolTokens = q.word.split("");
+            q.dummys.forEach(d => poolTokens.push(d));
+            poolTokens = shuffleArray(poolTokens);
+            
+            poolTokens.forEach((char, idx) => {
+                const tile = createTile(char, idx, true);
+                pool.appendChild(tile);
+            });
+        } 
+        else if (q.type === "scramble") {
+            // 語順並び替えプール生成（完全シャッフル）
+            let poolTokens = [...q.tokens];
+            poolTokens = shuffleArray(poolTokens);
+
+            poolTokens.forEach((word, idx) => {
+                const tile = createTile(word, idx, false);
+                pool.appendChild(tile);
+            });
+        } 
+        else if (q.type === "choice") {
+            // 読解選択式
+            workspace.style.display = "none";
+            pool.style.display = "none";
+            choices.style.display = "flex";
+            readingBox.style.display = "block";
+            readingBox.innerHTML = q.context;
+
+            q.choices.forEach((choiceText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "choice-btn";
+                btn.innerText = choiceText;
+                btn.onclick = () => {
+                    document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    selectedChoiceIdx = idx;
+                };
+                choices.appendChild(btn);
+            });
+        }
+    }
+
+    function createTile(text, uniqueId, isChar) {
+        const tile = document.createElement('div');
+        tile.className = "tile";
+        tile.innerText = text;
+        tile.dataset.id = uniqueId;
+        tile.dataset.text = text;
+        
+        tile.onclick = () => {
+            // トグル移動
+            if (tile.parentElement.id === "pool") {
+                document.getElementById('workspace').appendChild(tile);
+                selectedAnswer.push({id: uniqueId, text: text});
+            } else {
+                document.getElementById('pool').appendChild(tile);
+                selectedAnswer = selectedAnswer.filter(item => item.id !== uniqueId);
+            }
+        };
+        return tile;
+    }
+
+    function shuffleArray(arr) {
+        const newArr = [...arr];
+        for (let i = newArr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+        }
+        return newArr;
+    }
+
+    // ----------------------------------------------------------------
+    // 6. 解答判定ロジック
+    // ----------------------------------------------------------------
+    document.getElementById('submit-btn').onclick = function() {
+        const q = questions[currentStageIdx];
+        let isCorrect = false;
+
+        if (q.type === "spelling") {
+            const playerStr = selectedAnswer.map(i => i.text).join("");
+            isCorrect = (playerStr === q.word);
+        } else if (q.type === "scramble") {
+            const playerStr = selectedAnswer.map(i => i.text).join(" ");
+            const targetStr = q.tokens.join(" ");
+            isCorrect = (playerStr === targetStr);
+        } else if (q.type === "choice") {
+            isCorrect = (selectedChoiceIdx === q.correctIdx);
+        }
+
+        if (isCorrect) {
+            handleCorrect();
+        } else {
+            handleWrong();
+        }
+    };
+
+    document.getElementById('reset-btn').onclick = function() {
+        // 現在のステージを再描画（リセット）
+        renderStage();
+    };
+
+    function handleCorrect() {
+        playCorrectSound();
+        // 正解時は決定系ボタンを隠し、NEXTボタンを出す
+        document.getElementById('submit-btn').style.display = "none";
+        document.getElementById('reset-btn').style.display = "none";
+        document.getElementById('next-btn').style.display = "block";
+        
+        const hintBox = document.getElementById('hint-box');
+        hintBox.style.background = "#e8f8f5";
+        hintBox.style.borderLeft = "5px solid #2ecc71";
+        hintBox.style.color = "#0e6251";
+        hintBox.innerText = "✨ 正解！素晴らしいですね！";
+        hintBox.style.display = "block";
+    }
+
+    function handleWrong() {
+        playWrongSound();
+        
+        // ライフ減少
+        lives--;
+        updateHearts();
+
+        // 間違い演出（カードを激しく揺らす or Shatter）
+        const card = document.getElementById('stage-card');
+        card.classList.add('shake');
+        
+        // パズルタイルの砕け散りアニメーションのトリガー
+        document.querySelectorAll('#workspace .tile').forEach(tile => {
+            tile.classList.add('shatter');
+        });
+
+        setTimeout(() => {
+            card.classList.remove('shake');
+            if (lives <= 0) {
+                showGameOver();
+            } else {
+                // 自動リセット
+                renderStage();
+                // 不正解時の個別具体的なヒントを常時保持
+                const hintBox = document.getElementById('hint-box');
+                hintBox.style.background = "#fdf2e9";
+                hintBox.style.borderLeft = "5px solid #e67e22";
+                hintBox.style.color = "#7e5109";
+                hintBox.innerText = "💡 アドバイス: " + currentHintActive;
+                hintBox.style.display = "block";
+            }
+        }, 600);
+    }
+
+    function updateHearts() {
+        const hContainer = document.getElementById('hearts');
+        hContainer.innerText = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
+    }
+
+    function showGameOver() {
+        document.getElementById('gameover-screen').style.display = "flex";
+    }
+
+    // ----------------------------------------------------------------
+    // 7. ステージ進行＆特殊演出
+    // ----------------------------------------------------------------
+    document.getElementById('next-btn').onclick = function() {
+        const currentQ = questions[currentStageIdx];
+        
+        // エリア1クリア（問4クリア）時のカーテン演出
+        if (currentQ.id === 4) {
+            triggerCurtainTransition();
+            return;
+        }
+
+        // エリア2クリア（問7クリア）時の2秒ウェイト＆WARNING演出
+        if (currentQ.id === 7) {
+            triggerWarningTransition();
+            return;
+        }
+
+        // 通常の次ステージ移行
+        currentStageIdx++;
+        renderStage();
+    };
+
+    function triggerCurtainTransition() {
+        const cLeft = document.getElementById('curtain');
+        const cRight = document.getElementById('curtain-right');
+        cLeft.style.left = "0";
+        cRight.style.right = "0";
+
+        setTimeout(() => {
+            currentStageIdx++;
+            renderStage();
+            cLeft.style.left = "-50%";
+            cRight.style.right = "-50%";
+        }, 600);
+    }
+
+    function triggerWarningTransition() {
+        const overlay = document.getElementById('warning-overlay');
+        
+        // 確実に2秒間ウェイトを挟む
+        setTimeout(() => {
+            overlay.style.display = "flex";
+            document.body.classList.add('shake');
+            playTone(90, 'sawtooth', 0.8);
+
+            setTimeout(() => {
+                overlay.style.display = "none";
+                document.body.classList.remove('shake');
+                currentStageIdx++;
+                renderStage();
+            }, 2000);
+
+        }, 2000);
+    }
+
+    // ----------------------------------------------------------------
+    // 8. ゲームクリア画面（ファイル名自動取得）
+    // ----------------------------------------------------------------
+    function showGameClear() {
+        document.getElementById('game-play-area').style.display = "none";
+        document.getElementById('control-panel').style.display = "none";
+        document.getElementById('hint-box').style.display = "none";
+        
+        // クラスカラーをイエローに変更
+        updateTheme(0, true);
+
+        // ファイル名自動取得
+        let fileName = "ENGLISH QUEST";
+        try {
+            const path = window.location.pathname;
+            const extracted = path.substring(path.lastIndexOf('/') + 1).replace('.html', '');
+            if (extracted && extracted !== "") {
+                fileName = decodeURIComponent(extracted);
+            }
+        } catch(e) {}
+
+        document.getElementById('clear-file-name').innerHTML = `<span style="background:rgba(0,0,0,0.07); padding:4px 12px; border-radius:8px; font-size:1rem; display:inline-block; margin-bottom:10px;">📂 ${fileName}</span>`;
+        document.getElementById('clear-screen').style.display = "block";
+
+        // パーティクル演出
+        for (let i = 0; i < 30; i++) {
+            createParticle();
+        }
+    }
+
+    function createParticle() {
+        const emojis = ["🎉", "✨", "👑", "✏️", "🔥", "👍"];
+        const p = document.createElement('div');
+        p.className = "particle";
+        p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        p.style.left = Math.random() * 100 + "%";
+        p.style.top = Math.random() * 50 + 50 + "%";
+        document.getElementById('clear-screen').appendChild(p);
+        setTimeout(() => p.remove(), 2000);
+    }
+
+    // 初期起動
+    renderStage();
+
+</script>
+</body>
+</html>
