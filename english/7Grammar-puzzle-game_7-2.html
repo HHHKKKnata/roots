@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英語攻略パズルゲーム - Unit 1 What can we experience on a trip?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #eef1f1;
+            --theme-color: #9bb3b1;
+            --card-bg: #cbdad8;
+            --text-color: #2c3e3b;
+            --transition-speed: 0.5s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px;
+            overflow-x: hidden;
+            transition: background-color var(--transition-speed) ease;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 760px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.06);
+            padding: 24px;
+            position: relative;
+            transition: all var(--transition-speed) ease;
+        }
+
+        /* ヘッダー・ステータススタイル */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--theme-color);
+            padding-bottom: 12px;
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            color: var(--text-color);
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-weight: 700;
+        }
+
+        .life-container {
+            font-size: 1.2rem;
+            color: #d2a0a6;
+            letter-spacing: 2px;
+        }
+
+        /* ミニマップ演出 */
+        .minimap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f7f9f9;
+            padding: 12px 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            position: relative;
+            border: 2px solid #e0e4e4;
+        }
+
+        .map-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #a0a8a8;
+            z-index: 2;
+        }
+
+        .map-node.active {
+            color: var(--text-color);
+        }
+
+        .map-node .icon {
+            width: 36px;
+            height: 36px;
+            background: #e0e4e4;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+
+        .map-node.active .icon {
+            background: var(--theme-color);
+            color: #fff;
+            transform: scale(1.15);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .map-line {
+            position: absolute;
+            top: 30px;
+            left: 50px;
+            right: 50px;
+            height: 4px;
+            background: #e0e4e4;
+            z-index: 1;
+        }
+
+        .map-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: var(--theme-color);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* メインコンテンツエリア */
+        .instruction {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .question-box {
+            background: #fcfdfe;
+            border: 2px solid var(--theme-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .text-passage {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #444;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f3f6f6;
+            border-radius: 8px;
+            border-left: 5px solid var(--theme-color);
+        }
+
+        .hint-badge {
+            font-size: 0.8rem;
+            color: #d2a0a6;
+            background: #fff3f4;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 5px;
+            font-weight: 700;
+        }
+
+        /* パズル・カードプールエリア */
+        .pool-area, .ans-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 16px;
+            border-radius: 12px;
+            min-height: 70px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+
+        .ans-area {
+            border: 2px dashed var(--theme-color);
+            background: #fafcfc;
+        }
+
+        .pool-area {
+            background: #f0f3f3;
+            border: 2px solid transparent;
+        }
+
+        .card {
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+            transition: transform 0.1s, background-color 0.3s;
+            display: inline-block;
+        }
+
+        .card:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+        }
+
+        /* 選択肢形式のスタイル */
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .choice-btn {
+            background: #fff;
+            border: 2px solid #e0e4e4;
+            padding: 14px 20px;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #444;
+        }
+
+        .choice-btn:hover {
+            border-color: var(--theme-color);
+            background: #fafdfd;
+        }
+
+        .choice-btn.selected {
+            background: var(--theme-color);
+            color: #fff;
+            border-color: var(--theme-color);
+        }
+
+        /* 操作ボタンエリア */
+        .control-btns {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-reset {
+            background: #e0e4e4;
+            color: #606868;
+        }
+
+        .btn-reset:hover {
+            background: #d0d4d4;
+        }
+
+        .btn-submit {
+            background: var(--theme-color);
+            color: #fff;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-next {
+            background: #e6be7e;
+            color: #4a3c20;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+        }
+
+        /* フィードバック＆常時ヒントシステム */
+        .feedback-box {
+            margin-top: 16px;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            display: none;
+            line-height: 1.6;
+        }
+
+        .feedback-box.correct {
+            display: block;
+            background: #eef7f2;
+            color: #2b6a4a;
+            border: 2px solid #addcb9;
+        }
+
+        .feedback-box.wrong {
+            display: block;
+            background: #fff3f4;
+            color: #9c4147;
+            border: 2px solid #e7cbd0;
+        }
+
+        /* 注意書きクリップ */
+        .warning-text {
+            font-size: 0.85rem;
+            color: #707878;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        /* ボスHPゲージ */
+        .boss-hp-container {
+            background: #f3f3f3;
+            border-radius: 10px;
+            height: 20px;
+            width: 100%;
+            margin-bottom: 15px;
+            overflow: hidden;
+            border: 2px solid #4a2c30;
+            display: none;
+        }
+
+        .boss-hp-bar {
+            background: #d2a0a6;
+            height: 100%;
+            width: 100%;
+            transition: width 0.4s ease;
+        }
+
+        /* アニメーション用特殊演出スクリーン */
+        #shutter-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .shutter-half {
+            width: 50%;
+            height: 100%;
+            background: #b9b2da;
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+            transform: scaleX(0);
+        }
+
+        #shutter-screen.left .shutter-half:nth-child(1) { transform-origin: left; }
+        #shutter-screen.right .shutter-half:nth-child(2) { transform-origin: right; }
+        
+        #shutter-screen.active .shutter-half {
+            transform: scaleX(1);
+        }
+
+        /* 警告演出 */
+        #warning-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+
+        #warning-screen.active {
+            opacity: 1;
+        }
+
+        .warning-banner {
+            color: #ff4a5a;
+            font-size: 2rem;
+            font-weight: 900;
+            text-align: center;
+            animation: zoomBlink 0.5s infinite alternate;
+            letter-spacing: 2px;
+        }
+
+        @keyframes zoomBlink {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* 画面揺れ */
+        .shake {
+            animation: screenShake 0.15s infinite;
+        }
+
+        @keyframes screenShake {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(0px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(2px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(2px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        /* 間違い時の砕け散りアニメーション用 */
+        .shatter {
+            animation: blockShatter 0.6s forwards cubic-bezier(0.55, 0.055, 0.675, 0.19);
+        }
+
+        @keyframes blockShatter {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(300px) rotate(45deg); opacity: 0; }
+        }
+
+        /* ゲームオーバー・クリア全画面オーバーレイ */
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #131417;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .fullscreen-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .go-title {
+            color: #ff4a5a;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 24px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(255,74,90,0.4);
+        }
+
+        .clear-title {
+            color: #4a3c20;
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .clear-subtitle {
+            font-size: 1.5rem;
+            color: #7c6335;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        .overlay-btn {
+            background: #fff;
+            color: #131417;
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        .overlay-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* パーティクル */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 1.5rem;
+            z-index: 2001;
+            animation: particleFly 1.5s forwards ease-out;
+        }
+
+        @keyframes particleFly {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--mx), var(--my)) scale(0.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <header>
+            <h1 id="stage-title">エリア1: パズルロード (問 1/10)</h1>
+            <div class="status-bar">
+                <div>LIFE:</div>
+                <div class="life-container" id="life-box">❤️❤️❤️</div>
+            </div>
+        </header>
+
+        <!-- 進行度ミニマップ -->
+        <div class="minimap">
+            <div class="map-line">
+                <div class="map-progress" id="map-progress-bar"></div>
+            </div>
+            <div class="map-node active" id="node-1">
+                <div class="icon">🧩</div>
+                <span>パズルロード</span>
+            </div>
+            <div class="map-node" id="node-2">
+                <div class="icon">🏛️</div>
+                <span>謎解きの神殿</span>
+            </div>
+            <div class="map-node" id="node-3">
+                <div class="icon">👹</div>
+                <span>ボスバトル</span>
+            </div>
+        </div>
+
+        <!-- ボスHPゲージ -->
+        <div class="boss-hp-container" id="boss-hp-area">
+            <div class="boss-hp-bar" id="boss-hp-bar"></div>
+        </div>
+
+        <!-- 指示文・メイン画面 -->
+        <div class="instruction" id="instruction-text">正しいスペルになるように文字カードを並び替えなさい。</div>
+        
+        <div class="question-box" id="question-box">
+            <!-- 動的生成内容 -->
+        </div>
+
+        <div class="warning-text" id="pool-warning">※使わない文字カードも余分に混ざっています</div>
+
+        <!-- 解答・プールエリア -->
+        <div id="interactive-zone">
+            <div class="ans-area" id="ans-area"></div>
+            <div class="pool-area" id="pool-area"></div>
+        </div>
+
+        <!-- フィードバック・アドバイス常時表示 -->
+        <div class="feedback-box" id="feedback-box"></div>
+
+        <!-- コントロールボタン -->
+        <div class="control-btns">
+            <button class="btn btn-reset" id="btn-reset" onclick="handleReset()">リセット (RESET)</button>
+            <button class="btn btn-submit" id="btn-submit" onclick="handleSubmit()">決定 (SUBMIT)</button>
+            <button class="btn btn-next" id="btn-next" onclick="handleNext()" style="display: none;">次へ (NEXT) ➔</button>
+        </div>
+    </div>
+
+    <!-- 各種演出用スクリーン -->
+    <div id="shutter-screen">
+        <div class="shutter-half"></div>
+        <div class="shutter-half"></div>
+    </div>
+
+    <div id="warning-screen">
+        <div class="warning-banner">⚠️ WARNING!! BOSS APPROACHING ⚠️</div>
+    </div>
+
+    <!-- ゲームオーバー画面 -->
+    <div class="fullscreen-overlay" id="gameover-screen">
+        <div class="go-title">GAME OVER</div>
+        <button class="overlay-btn" onclick="restartGame()">Play Again</button>
+    </div>
+
+    <!-- ゲームクリア画面 -->
+    <div class="fullscreen-overlay" id="gameclear-screen" style="background: #e6be7e;">
+        <div class="clear-title" id="clear-file-name">FILE CLEAR!!</div>
+        <div class="clear-subtitle">You nailed it! 🎉</div>
+        <button class="overlay-btn" style="background: #4a3c20; color: #fff;" onclick="restartGame()">もう一度遊ぶ</button>
+    </div>
+
+    <script>
+        // Web Audio API によるシンセサイザー音源
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type, duration) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e){}
+        }
+        function soundCorrect() { playTone(523.25, 'sine', 0.15); setTimeout(() => playTone(659.25, 'sine', 0.3), 100); }
+        function soundWrong() { playTone(180, 'sawtooth', 0.4); }
+        function soundPhase() { playTone(440, 'triangle', 0.2); setTimeout(() => playTone(880, 'triangle', 0.4), 150); }
+
+        // 問題データ定義（全10問）
+        const questions = [
+            // エリア1: パズルロード（単語スペルパズル）
+            { id: 1, type: 'spell', word: 'will', hint: '【助動詞】…でしょう、…するつもりです' },
+            { id: 2, type: 'spell', word: 'excited', hint: '【形容詞】興奮した、ワクワクした' },
+            { id: 3, type: 'spell', word: 'seafood', hint: '【名詞】シーフード、海産物' },
+            { id: 4, type: 'spell', word: 'reservation', hint: '【名詞】予約' },
+            // エリア2: 謎解きの神殿（長文・文脈選択形式）
+            { id: 5, type: 'choice', text: "A: What are we going to do tomorrow?<br>B: First, we are going to ________ a museum.", choices: ["visit", "visiting", "visited"], correct: "visit", adv: "are going to の後ろは『動詞の原形』が原則です。教科書の visit Merlion Park の型を思い出そう！" },
+            { id: 6, type: 'choice', text: "A: Is the hotel far from here?<br>B: No, it's not. You'll ________ the station soon.", choices: ["saw", "see", "seeing"], correct: "see", adv: "You'll は You will の短縮形。助動詞 will の後ろに置く動詞の形に注意して読解しよう。" },
+            { id: 7, type: 'choice', text: "A: What do you want to eat? Steak or sushi?<br>B: I ________ to eat sushi.", choices: ["want", "will", "am"], correct: "want", adv: "「〜したい」という希望を伝える表現。「I want to + 動詞の原形」の形が文脈に合います。" },
+            // エリア3: ボスバトル（文法並び替え・英作文）
+            { id: 8, type: 'arrange', text: "私は明日、写真を撮るつもりです。<br><span class='hint-badge'>※take: 撮る</span>", tokens: ["I", "will", "take", "pictures", "tomorrow"], correct: ["I", "will", "take", "pictures", "tomorrow"], adv: "意志を表す〈will + 動詞の原形〉の語順。主語(I)の直後にwillを配置して、「写真を撮る」を続けよう。" },
+            { id: 9, type: 'arrange', text: "私たちはまもなくそのレストランに到着する予定です。<br><span class='hint-badge'>※get to: 〜に到着する</span>", tokens: ["we", "will", "get", "to", "the", "restaurant", "soon"], correct: ["we", "will", "get", "to", "the", "restaurant", "soon"], adv: "主語の後は will ＋ 動詞の原形(get)です。「〜に到着する」は get to で表します。" },
+            { id: 10, type: 'arrange', text: "私は明日、席を予約するつもりです。<br><span class='hint-badge'>※make a reservation: 予約をする</span>", tokens: ["I", "will", "make", "a", "reservation", "tomorrow"], correct: ["I", "will", "make", "a", "reservation", "tomorrow"], adv: "最終問題！「私は〜するつもりです」は I will からスタート。その後ろに「予約をする」の塊を正しく並べ替えよう。" }
+        ];
+
+        let currentIdx = 0;
+        let lives = 3;
+        let selectedChoice = "";
+        let hasEvaluated = false;
+
+        // カラーパレット定義
+        const themes = {
+            area1: { bg: '#eef1f1', theme: '#9bb3b1', card: '#cbdad8', text: '#2c3e3b' },
+            area2: { bg: '#ebdbe0', theme: '#b9b2da', card: '#d5d1ea', text: '#322c4a' },
+            area3: { bg: '#f2e5e7', theme: '#d2a0a6', card: '#e7cbd0', text: '#4a2c30' },
+            clear: { bg: '#f9f3e6', theme: '#e6be7e', card: '#f0dfc1', text: '#4a3c20' }
+        };
+
+        function updateTheme(phase) {
+            const t = themes[phase];
+            document.documentElement.style.setProperty('--bg-color', t.bg);
+            document.documentElement.style.setProperty('--theme-color', t.theme);
+            document.documentElement.style.setProperty('--card-bg', t.card);
+            document.documentElement.style.setProperty('--text-color', t.text);
+        }
+
+        function initStage() {
+            hasEvaluated = false;
+            document.getElementById("btn-next").style.display = "none";
+            document.getElementById("btn-submit").style.display = "inline-flex";
+            const feedback = document.getElementById("feedback-box");
+            feedback.className = "feedback-box";
+            feedback.innerHTML = "";
+
+            const q = questions[currentIdx];
+            
+            // ステージタイトルとミニマップ進行度
+            let areaName = "エリア1: パズルロード";
+            let progressWidth = "0%";
+            if (currentIdx >= 4 && currentIdx <= 6) {
+                areaName = "エリア2: 謎解きの神殿";
+                progressWidth = "50%";
+                document.getElementById("node-2").classList.add("active");
+                document.getElementById("boss-hp-area").style.display = "none";
+            } else if (currentIdx >= 7) {
+                areaName = "エリア3: ボスバトル";
+                progressWidth = "100%";
+                document.getElementById("node-3").classList.add("active");
+                document.getElementById("boss-hp-area").style.display = "block";
+                updateBossHP();
+            }
+            document.getElementById("stage-title").innerText = `${areaName} (問 ${currentIdx + 1}/10)`;
+            document.getElementById("map-progress-bar").style.width = progressWidth;
+
+            // 各クエスチョン形式のレンダリング
+            if (q.type === 'spell') {
+                document.getElementById("instruction-text").innerText = "正しい語順（スペル）になるようにアルファベットカードを並び替えなさい。";
+                document.getElementById("pool-warning").style.display = "block";
+                document.getElementById("question-box").innerHTML = `<div style="font-size:1.3rem; font-weight:700; text-align:center;">${q.hint}</div>`;
+                setupSpellPuzzle(q.word);
+            } else if (q.type === 'choice') {
+                document.getElementById("instruction-text").innerText = "適切なものを選択肢から選びなさい。";
+                document.getElementById("pool-warning").style.display = "none";
+                document.getElementById("interactive-zone").style.display = "none";
+                
+                let html = `<div class="text-passage">${q.text}</div>`;
+                html += `<div class="choices-container">`;
+                q.choices.forEach(c => {
+                    html += `<button class="choice-btn" onclick="selectChoice(this, '${c}')">${c}</button>`;
+                });
+                html += `</div>`;
+                document.getElementById("question-box").innerHTML = html;
+                selectedChoice = "";
+            } else if (q.type === 'arrange') {
+                document.getElementById("instruction-text").innerText = "正しい語順になるように下の単語カードを並び替えなさい。";
+                document.getElementById("pool-warning").style.display = "none";
+                document.getElementById("question-box").innerHTML = `<div style="font-size:1.15rem; font-weight:700; line-height:1.6;">${q.text}</div>`;
+                setupArrangePuzzle(q.tokens);
+            }
+        }
+
+        // スペルパズルのプール生成（シャッフル＆ダミー混入）
+        function setupSpellPuzzle(word) {
+            document.getElementById("interactive-zone").style.display = "block";
+            const ansArea = document.getElementById("ans-area");
+            const poolArea = document.getElementById("pool-area");
+            ansArea.innerHTML = "";
+            poolArea.innerHTML = "";
+
+            let arr = word.split("");
+            // ダミー文字を2〜3枚混入
+            const dummies = ["x", "p", "q", "b", "m"];
+            let dummyCount = 2 + Math.floor(Math.random() * 2);
+            for(let i=0; i<dummyCount; i++) {
+                let randomDummy = dummies[Math.floor(Math.random() * dummies.length)];
+                arr.push(randomDummy);
+            }
+
+            // 完全ランダムシャッフル
+            shuffleArray(arr);
+
+            arr.forEach((letter, idx) => {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerText = letter;
+                card.dataset.origin = "pool";
+                card.onclick = () => handleCardClick(card);
+                poolArea.appendChild(card);
+            });
+        }
+
+        // 並び替えパズルのプール生成（完全シャッフル、正解順防止）
+        function setupArrangePuzzle(tokens) {
+            document.getElementById("interactive-zone").style.display = "block";
+            const ansArea = document.getElementById("ans-area");
+            const poolArea = document.getElementById("pool-area");
+            ansArea.innerHTML = "";
+            poolArea.innerHTML = "";
+
+            let arr = [...tokens];
+            // 完全にシャッフル。もし偶然正解順と同じになったらもう一度
+            do {
+                shuffleArray(arr);
+            } while (JSON.stringify(arr) === JSON.stringify(tokens) && arr.length > 1);
+
+            arr.forEach(token => {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerText = token;
+                card.onclick = () => handleCardClick(card);
+                poolArea.appendChild(card);
+            });
+        }
+
+        function handleCardClick(card) {
+            if (hasEvaluated) return;
+            const ansArea = document.getElementById("ans-area");
+            const poolArea = document.getElementById("pool-area");
+            
+            if (card.parentElement.id === "pool-area") {
+                ansArea.appendChild(card);
+            } else {
+                poolArea.appendChild(card);
+            }
+            playTone(400, 'sine', 0.05);
+        }
+
+        function selectChoice(btn, val) {
+            if (hasEvaluated) return;
+            document.querySelectorAll(".choice-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            selectedChoice = val;
+            playTone(450, 'sine', 0.05);
+        }
+
+        function handleReset() {
+            if (hasEvaluated) return;
+            initStage();
+            playTone(300, 'triangle', 0.1);
+        }
+
+        function handleSubmit() {
+            if (hasEvaluated) return;
+            const q = questions[currentIdx];
+            let isCorrect = false;
+            let playerAns = "";
+
+            if (q.type === 'spell') {
+                const cards = document.querySelectorAll("#ans-area .card");
+                playerAns = Array.from(cards).map(c => c.innerText).join("");
+                isCorrect = (playerAns === q.word);
+            } else if (q.type === 'choice') {
+                if (!selectedChoice) {
+                    alert("選択肢をどれか1つ選んでください。");
+                    return;
+                }
+                isCorrect = (selectedChoice === q.correct);
+            } else if (q.type === 'arrange') {
+                const cards = document.querySelectorAll("#ans-area .card");
+                const ansTokens = Array.from(cards).map(c => c.innerText);
+                isCorrect = (JSON.stringify(ansTokens) === JSON.stringify(q.correct));
+            }
+
+            const feedback = document.getElementById("feedback-box");
+
+            if (isCorrect) {
+                soundCorrect();
+                feedback.className = "feedback-box correct";
+                feedback.innerHTML = "✨ 正解！すばらしい！";
+                hasEvaluated = true;
+                document.getElementById("btn-submit").style.display = "none";
+                document.getElementById("btn-next").style.display = "inline-flex";
+                if (currentIdx >= 7) {
+                    updateBossHP();
+                }
+            } else {
+                soundWrong();
+                // ミス時演出：パズル砕け散り
+                if (q.type === 'spell' || q.type === 'arrange') {
+                    const ansCards = document.querySelectorAll("#ans-area .card");
+                    ansCards.forEach(c => c.classList.add("shatter"));
+                }
+                
+                lives--;
+                updateLives();
+                
+                feedback.className = "feedback-box wrong";
+                // 不正解時の個別動的ヒント（リセットまたは次操作まで常時表示維持）
+                if (q.type === 'spell') {
+                    feedback.innerHTML = `❌ ちがうスペルだよ。<br><strong>【アドバイス】</strong>${q.hint} のスペルをもう一度確認してみよう。使わない余分な文字にまどわされないでね！`;
+                } else if (q.type === 'choice') {
+                    feedback.innerHTML = `❌ 残念、ちがいます。<br><strong>【読解ヒント】</strong>${q.adv}`;
+                } else if (q.type === 'arrange') {
+                    feedback.innerHTML = `❌ 語順がちがいます。<br><strong>【アドバイス】</strong>${q.adv}`;
+                }
+
+                if (lives <= 0) {
+                    setTimeout(() => {
+                        document.getElementById("gameover-screen").classList.add("active");
+                    }, 600);
+                    return;
+                }
+
+                // 1秒後に自動でクリアして並び直し可能にする（ヒント表示は維持）
+                setTimeout(() => {
+                    if (q.type === 'spell' || q.type === 'arrange') {
+                        const poolArea = document.getElementById("pool-area");
+                        const ansCards = document.querySelectorAll("#ans-area .card");
+                        ansCards.forEach(c => {
+                            c.classList.remove("shatter");
+                            poolArea.appendChild(c);
+                        });
+                    }
+                }, 600);
+            }
+        }
+
+        function handleNext() {
+            if (currentIdx === 3) {
+                // エリア1クリア ➔ カーテン・シャッター演出
+                soundPhase();
+                const shutter = document.getElementById("shutter-screen");
+                shutter.classList.add("active");
+                setTimeout(() => {
+                    currentIdx++;
+                    updateTheme("area2");
+                    initStage();
+                    shutter.classList.remove("active");
+                }, 600);
+            } else if (currentIdx === 6) {
+                // エリア2クリア ➔ 2秒の余白 ➔ WARNING演出
+                soundPhase();
+                currentIdx++;
+                document.getElementById("btn-next").style.display = "none";
+                
+                // 確実に2秒間のウェイト
+                setTimeout(() => {
+                    // 画面激しく振動＆警告レイヤー表示
+                    document.body.classList.add("shake");
+                    const warnScreen = document.getElementById("warning-screen");
+                    warnScreen.classList.add("active");
+                    playTone(220, 'sawtooth', 0.8);
+
+                    setTimeout(() => {
+                        document.body.classList.remove("shake");
+                        warnScreen.classList.remove("active");
+                        updateTheme("area3");
+                        initStage();
+                    }, 2000);
+
+                }, 2000);
+            } else if (currentIdx === 9) {
+                // 全ステージクリア！ボス撃破演出
+                updateTheme("clear");
+                const clearScreen = document.getElementById("gameclear-screen");
+                
+                // ファイル名を自動取得してアッパーケースで表示
+                let pathName = window.location.pathname;
+                let fileName = pathName.substring(pathName.lastIndexOf('/') + 1).replace(".html", "");
+                if (!fileName || fileName === "") fileName = "UNIT1_FUTURE_TRIP";
+                document.getElementById("clear-file-name").innerText = `${decodeURIComponent(fileName).toUpperCase()} CLEAR!!`;
+                
+                clearScreen.classList.add("active");
+                spawnParticles();
+            } else {
+                currentIdx++;
+                initStage();
+            }
+        }
+
+        function updateLives() {
+            let str = "";
+            for(let i=0; i<3; i++) {
+                str += (i < lives) ? "❤️" : "🖤";
+            }
+            document.getElementById("life-box").innerText = str;
+        }
+
+        function updateBossHP() {
+            // 問8, 9, 10の3問構成に応じたHPゲージ
+            let hpPercent = 100;
+            if (currentIdx === 8) hpPercent = 66;
+            if (currentIdx === 9) hpPercent = 33;
+            if (hasEvaluated && currentIdx === 9) hpPercent = 0;
+            document.getElementById("boss-hp-bar").style.width = `${hpPercent}%`;
+        }
+
+        function restartGame() {
+            lives = 3;
+            currentIdx = 0;
+            updateLives();
+            updateTheme("area1");
+            document.getElementById("node-2").classList.remove("active");
+            document.getElementById("node-3").classList.remove("active");
+            document.getElementById("gameover-screen").classList.remove("active");
+            document.getElementById("gameclear-screen").classList.remove("active");
+            initStage();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // 紙吹雪・絵文字パーティクル演出
+        function spawnParticles() {
+            const emojis = ["🎉", "✨", "👑", "👍", "🔥", "🌟"];
+            for (let i = 0; i < 40; i++) {
+                const p = document.createElement("div");
+                p.className = "particle";
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                p.style.left = "50%";
+                p.style.top = "50%";
+                
+                const mx = (Math.random() - 0.5) * 400 + "px";
+                const my = (Math.random() - 0.5) * 400 - 200 + "px";
+                p.style.setProperty('--mx', mx);
+                p.style.setProperty('--my', my);
+                
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+
+        // 初期起動
+        window.onload = () => {
+            initStage();
+        };
+    </script>
+</body>
+</html>
